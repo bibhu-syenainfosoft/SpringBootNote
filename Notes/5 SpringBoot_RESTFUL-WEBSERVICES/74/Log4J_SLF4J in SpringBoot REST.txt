@@ -1,0 +1,151 @@
+				Date : 11/12/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+			----------------------------
+Log4J Session#1,#2
+https://www.youtube.com/c/NareshIT/search?query=log4j%20raghu
+
+JUnit #1, #2
+https://www.youtube.com/c/NareshIT/search?query=JUnit%20raghu
+
+Redis Cache #1,#2
+https://www.youtube.com/c/NareshIT/search?query=Redis%20raghu
+
+			 Spring Boot : REST Mini Project
+
+=> Try-Catch Block Coding (DONE)
+=> Logging (SLF4J-LOG4J)
+=> Swagger UI
+=> Unit Testing Application
+========================================================================
+Log4J : Logging For Java Applicaions
+This is basic tools for Logging in any Java Application.
+
+a. Logger    : It activates logging concept for a class.
+               Create this in RestController/Controller classes.
+
+b. Appender  : Where to print/store log messages?
+               ConsoleAppender(DevOnly), FileAppender (RollingFileAppender),
+                 
+c. Layout    : What is the format of message?
+               PatternLayout : %d, %C, %M, %m, %L,......etc
+
+*)you Must create log4j.properties file only with all keys in that for appender and layout.
+
+SLF4J: Simple Logging Facade for Java
+ It is reducing programmer work by creating appender and layout objects
+ just provide type name and no need to write exact log4j.properties file.
+
+ Normal loadable properties file is ok.
+
+Priority Methods in Logging:
+---DEBUG
+      INFO       <----------
+---WARN
+       ERROR    <----------
+-- FATAL
+
+
+Integer id = ...
+
+log.info(" DATA IS " + id) ;
+
+log.info(" DATA IS {} ", id);  //expression replacement , ie {} is replaced with id value
+
+
+log.info(" DATA ID  {} and Name  {} , App Status is {} ", id, name, status);
+
+./    => current folder location
+
+../   => come back to one step
+
+Q) Which type of Appender type for file spring boot is using?
+A) RollingFileAppender. Ie we provide max file size to a log file, once it is
+   exceeded then create new log file and take backup of old data into compressed zip
+   format.
+
+*) DailyRollingFileAppender : It means create one log file for one day.
+   (It is not a good approch in case of multi-user application, in days so many no.of
+    log lines are added ...file size may get increased, complex to open and read)
+
+-Dlocation=xyz
+
+--data=val
+
+------------application.properties-------------------
+# Provide Root Looger
+logging.level.in.nareshit.raghu=INFO
+#logging.level.in.nareshit.raghu.rest=DEBUG
+logging.level.org.springframework=DEBUG
+#logging.level.org.springframework=ERROR
+# Provide Log File name + location
+logging.file.name=E:/mylogs/prodapp.log
+#logging.file.name=./prodapp.log
+#logging.file.name=./mylogs/prodapp.log
+#logging.file.name=../../prodapp.log
+
+#Pass the location key using option arg/VM args while running app.
+#logging.file.name=${logfilelocation}/prodapp.log
+
+# max file size of a log file
+logging.file.max-size=25MB
+# max days you want to store log files
+logging.file.max-history=5
+
+#logging.pattern.file= %d{dd-MM-yy hh:mm:ss} [%p] %C %M %m %n
+
+-------RestController code---
+package in.nareshit.raghu.rest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+.... (other imports)......
+
+@RestController
+@RequestMapping("/products")
+public class ProductRestController {
+	
+	private static final Logger LOG = 
+	       LoggerFactory.getLogger(ProductRestController.class);
+
+	@Autowired
+	private IProductService service;
+
+	@PostMapping
+	public ResponseEntity<String> saveProduct(
+			@RequestBody Product product)
+	{
+		LOG.info("ENTERED INTO SAVEPRODUCT METHOD");
+		
+		ResponseEntity<String> resp = null;
+		try {
+			Integer id =  service.saveProduct(product);
+			resp = new ResponseEntity<String>(
+					new StringBuffer()
+					.append("Product '")
+					.append(id)
+					.append("' saved")
+					.toString(),
+					HttpStatus.CREATED);  //201
+			
+			LOG.info(" PRODUCT SAVED WITH ID {} ", id);
+			
+		} catch (Exception e) {
+			
+			LOG.error(" UNABLE TO SAVE PRODUCT {} " , e.getMessage());
+			
+			resp = new ResponseEntity<String>(
+					"Unable to Process Save Product", 
+					HttpStatus.INTERNAL_SERVER_ERROR); //500
+
+			e.printStackTrace();
+
+		}
+		
+		LOG.info(" ABOUT TO LEAVE SAVEPRODUCT METHOD ");
+		return resp;
+	}
+
+  ........(other operations)....
+}

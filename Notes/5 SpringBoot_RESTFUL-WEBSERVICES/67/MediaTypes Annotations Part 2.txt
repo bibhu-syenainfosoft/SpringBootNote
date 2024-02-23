@@ -1,0 +1,119 @@
+				Date : 03/12/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+				----------------
+MediaType annotations(2)
+@RequestBody  : Input JSON Data and converting into Object Format, 
+		given as Method Parameter.
+and 
+@ResponseBody : ReturnType, if it is object --> Convert to JSON Format.
+
+*) JACKSON API :-
+This API is used to convert Object format to JSON and  even JSON data can be 
+converted to Object Format.
+
+Spring boot uses JACKSON API for JSON Conversion internally.
+
+--API  Details-----------
+package : com.fasterxml.jackson.databind
+class   : ObjectMapper
+
+Methods:-
+write : Object -> JSON
+read  : JSON   -> Object
+
+--Code---------------
+#1. Create Spring Boot Starter Project with 'Spring Web', 'Lombok' Dependencies
+
+#2. Model class
+package in.nareshit.raghu.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import lombok.Data;
+
+@Data
+public class Student {
+
+	private Integer sid;
+	private String sname;
+	private Double sfee;
+	@JsonIgnore
+	private String spwd;
+	
+}
+
+
+#3. Test class
+package in.nareshit.raghu;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import in.nareshit.raghu.model.Student;
+
+public class Test {
+
+	public static void main(String[] args) {
+		//Convert Object -> JSON(String) Format
+		try {
+			Student sob = new Student();
+			sob.setSid(55);
+			sob.setSname("SAM");
+			sob.setSfee(500.25);
+			sob.setSpwd("AABBCC");
+			
+			ObjectMapper om = new ObjectMapper(); //This is a class that converts object to JSON and viceversa.
+			
+			String json = om.writeValueAsString(sob);
+			System.out.println(json);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+Output:
+{
+ "sid"   : 55,
+ "sname" : "SAM",
+ "sfee"  : 500.25
+}
+----------------------------------------------------------------
+
+String s = "{ }"; // Valid JSON
+
+
+--code#2 Convert JSON to Object---------------
+package in.nareshit.raghu;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import in.nareshit.raghu.model.Student;
+
+public class Test {
+	
+	
+	public static void main(String[] args) {
+		//Convert JSON --> Object Format
+		try {
+			//String json= "{\"sid\":55,\"sname\":\"SAM\",\"sfee\":500.25,\"spwd\":\"AAAA\"}";
+			//String json ="{\"sid\":55}";
+			String json ="{}"; //valid -object created using default constrcutor
+			//String json ="{sid:55}"; //Invalid JSON Format -- JsonParseException
+			
+			ObjectMapper om = new ObjectMapper();   
+			Student sob = om.readValue(json,Student.class);
+			
+			System.out.println(sob);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	
+}
+
+
+

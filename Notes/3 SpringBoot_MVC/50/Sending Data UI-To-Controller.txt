@@ -1,0 +1,165 @@
+				Date : 10/11/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+				-----------------
+*) Sending Data from UI to Controller :-
+a) HTML Form
+b) Parameters
+
+a) HTML Form | ModelAttribute (commandName):-
+ This is commonly used concept in applications.
+ Ex: Register Form, Login Form, Payment Form, Comment Form, Enquery From..etc
+
+*) On click submit button, HTML form data is converted into Object Format by
+   Spring Container in below 4 steps, they are:
+
+a) Create Object  (Ex: Employee e = new Employee())
+b) Read Form Input Data ( Ex: String  sid = request.getParameter("id") /String type)
+c) Parse Data if required (Ex: int id = Integer.parseInt(sid))
+d) Set data to object (ex: e.setId(id))
+
+*) Here, programmer has to follow below steps,
+a) Create one class (Model class) for one HTML FORM
+b) Define variables (No.of Form Inputs = No.of Variables)
+c) Form Input name (name="" attribute) must have variableName
+   <input type="" name="variableName" ..
+   <select name="variableName"..
+   <textarea name="variableName"..
+
+*) Note: Spring container provide object Name for Model Attributes as 
+   CamelCase Rule for ObjectName using ClassName(ie className, first letter lowercase)
+   Ex: className : EmployeeInfo , objectName: employeeInfo.
+
+*) To read this object in Controller class, follow below syntax
+
+     @ModelAttribute("objectName") ClassName  localVariableName
+
+                  --or--
+
+     @ModelAttribute  ClassName  objectName
+
+------------------------------------------------------------------------------------
+	@PostMapping("/add")
+	public String readData(
+			//@ModelAttribute("employee") Employee eob
+			@ModelAttribute Employee employee,
+			Model model
+			) 
+	{
+		System.out.println(employee);
+		model.addAttribute("emp", employee);
+		return "EmpData";
+	}
+*)Equal servlets code:
+	req.setAttribute("emp",employee);
+	RD rd=req.getReqDisp("EmpData.jsp");
+	rd.forward(req,resp);
+
+Q) Difference between ModelAttribute and Model?
+A) Model : Send data from Controller to UI
+   ModelAttribute : Send form data from UI to Controller
+
+----------code------------------
+Name : SpringBoot2WebMvcHtmlFormEx
+Dep  : Spring web, lombok
+
+1) application.prperties
+server.port=9898
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
+
+2) UI Pages
+--EmployeeReg.jsp---
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h3>WELCOME TO EMPLOYEE REGISTER PAGE</h3>
+<form action="add" method="POST">
+<pre>
+ID   : <input type="text" name="empId"/>
+NAME : <input type="text" name="empName"/>
+SAL  : <input type="text" name="empSal"/>
+   <input type="submit" value="Create"/>
+</pre>
+</form>
+</body>
+</html>
+
+--EmpData.jsp--
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h3>WELCOME TO DATA PAGE!!: ${emp}</h3>
+</body>
+</html>
+-------------------
+
+3) Model class
+package in.nareshit.raghu.model;
+
+import lombok.Data;
+
+@Data
+public class Employee {
+
+	private Integer empId;
+	private String empName;
+	private Double empSal;
+}
+
+4) Controller
+package in.nareshit.raghu.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import in.nareshit.raghu.model.Employee;
+
+@Controller
+public class EmployeeController {
+
+	//1. Show Register Page
+	@GetMapping("/register")
+	public String showReg() {
+		
+		return "EmployeeReg";
+	}
+	
+	//2. Read Form Data
+	//@RequestMapping(value = "/add", method = RequestMethod.POST)
+	@PostMapping("/add")
+	public String readData(
+			//@ModelAttribute("employee") Employee eob
+			@ModelAttribute Employee employee,
+			Model model
+			) 
+	{
+		System.out.println(employee);
+		model.addAttribute("emp", employee);
+		return "EmpData";
+	}
+	
+}
+pom.xml
+<dependency>
+   <groupId>org.apache.tomcat.embed</groupId>
+   <artifactId>tomcat-embed-jasper</artifactId>
+</dependency>
+
+--Task---------
+Student Form (sid,sname,sfee)

@@ -1,0 +1,271 @@
+				Date : 07/12/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+			-----------------------------
+			Spring Boot REST Mini Project
+
+GET     : Fetch data from application
+
+POST    : Create new data at application
+
+PUT     : Modify existed data at application
+
+DELETE  : Remove existed data at application
+
+Q) How can we create a Custom exception?
+A) 
+ i. write a class that extends RuntimeException class
+ ii. Provide one defualt one param constrcutor
+ iii. Use this class where is it required.
+
+--Example---
+package in.nareshit.raghu.exception;
+
+public class BalInSuffException extends RuntimeException {
+
+	private static final long serialVersionUID = 1L;
+
+	public BalInSuffException() {
+		super();
+	}
+	
+	public BalInSuffException(String message) {
+		super(message);
+	}
+}
+----------------------------
+Lambda Syntax: ()-> {  }
+
+interface Sample {
+   int test();
+}
+
+Sample s = () -> { return 10; }
+Sample s = () -> 10;  //return and {} not required if only one statement
+
+
+interface Sample<T> {
+   <T> test();
+}
+Sample<String>  s = () -> "Hello";
+Sample<Integer> s = () -> 10;
+Sample<MyException> s = () -> new MyException("Dummy");
+
+
+interface Supplier<T> {
+  T get();
+}
+
+Supplier<Double>  s = () -> 10.0;
+Supplier<ProductNotFoundException> s = () -> new ProductNotFoundException("MSG");
+
+class Optional<T> {
+
+  T  orElseThrow(Supplier<X> s) {...};
+}
+
+opt.orElseThrow(() -> new ProductNotFoundException("MSG"));
+====================================================================
+
+--Old Style of null checking--
+String s =<Runtime from DB or any>; null
+
+if(s!=null) {
+	sysout(s.length());
+}
+
+--new Style of null checking--
+Optional<String> opt = repo.findById(10);
+
+if(opt.isPresent()) {
+	sysout(opt.get().length());
+}
+*) isPresent() -> checks about null and get() --> returns actual object.
+
+
+class  A{
+  static A getOb(){
+    return new A();
+  }
+  String show(int id) {
+    if(id>0) return "WELCOME";
+    else throw new RuntimeExcepion("DUMMY");
+
+  }
+}
+String s = A.getOb().show(10);
+----------------------------------------------
+
+=============coding steps=============================================
+a) Service Interface
+
+public Product getOneProduct(Integer id);
+
+b) Custom Exception
+package in.nareshit.raghu.exception;
+
+public class ProductNotFoundException extends RuntimeException {
+
+	private static final long serialVersionUID = 1L;
+
+	public ProductNotFoundException() {
+		super();
+	}
+	
+	public ProductNotFoundException(String message) {
+		super(message);
+	}
+}
+
+
+c) ServiceImpl
+
+package in.nareshit.raghu.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import in.nareshit.raghu.exception.ProductNotFoundException;
+import in.nareshit.raghu.model.Product;
+import in.nareshit.raghu.repo.ProductRepository;
+import in.nareshit.raghu.service.IProductService;
+
+@Service
+public class ProductServiceImpl implements IProductService {
+	@Autowired
+	private ProductRepository repo;
+	
+	@Override
+	public Integer saveProduct(Product p) {
+		//JDK 10 : local variable type inference
+		//Best DataType is selected by Java compiler
+		var cost = p.getProdCost();
+		
+		var gst = cost * 12.0/100;
+		var disc = cost * 20.0/100;
+		
+		p.setProdGst(gst);
+		p.setProdDisc(disc);
+		
+		p = repo.save(p);
+		
+		return p.getProdId();
+	}
+
+	@Override
+	public List<Product> getAllProducts() {
+		List<Product> list =  repo.findAll();
+		return list;
+	}
+	
+	
+	
+	@Override
+	public Product getOneProduct(Integer id) {
+		
+		/*
+		//Try to read object from DB
+		Optional<Product> opt = repo.findById(id);
+		
+		if(opt.isPresent()) { //if object is present
+			Product p = opt.get();
+			return p;
+		} else { //object not exist
+			throw new ProductNotFoundException("Product '"+id+"' Not Exist");
+		}
+		*/
+		return repo.findById(id)
+				.orElseThrow(
+						()-> new ProductNotFoundException(
+								"Product '"+id+"' Not Exist")
+						);
+	}	
+
+}
+
+
+d) RestController method
+
+@GetMapping("/{id}")
+	public ResponseEntity<Product> getOneProduct(
+			@PathVariable Integer id
+			)
+	{
+		Product p = service.getOneProduct(id);
+		return new ResponseEntity<Product>(p,HttpStatus.OK);
+	}
+
+e) Error Model class
+
+package in.nareshit.raghu.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data 
+@NoArgsConstructor
+@AllArgsConstructor
+public class ErrorData {
+
+	private String message;
+	private String datetime;
+	private String module;
+}
+
+
+f) Exception handler
+package in.nareshit.raghu.handler;
+
+import java.util.Date;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import in.nareshit.raghu.exception.ProductNotFoundException;
+import in.nareshit.raghu.model.ErrorData;
+
+@RestControllerAdvice
+public class CustomExceptionHandlerService {
+	/*
+	 * Below method is called by FC. When ProductNotFoundException
+	 * is thrown by any Rest controller (after throwing exception)
+	 */
+	
+	//--->Message comes in String format
+	/*
+	@ExceptionHandler(ProductNotFoundException.class)
+	public ResponseEntity<String> handleProductNotFoundException(
+			ProductNotFoundException pne
+			)
+	{
+		return new ResponseEntity<String>(
+				pne.getMessage(),HttpStatus.NOT_FOUND
+				);
+	}*/
+	//--->Message comes in JSON format
+	
+	@ExceptionHandler(ProductNotFoundException.class)
+	public ResponseEntity<ErrorData> handleProductNotFoundException(
+			ProductNotFoundException pne
+			)
+	{
+		return new ResponseEntity<ErrorData>(
+				new ErrorData(
+						pne.getMessage(), 
+						new Date().toString(), 
+						"Product"),
+				HttpStatus.NOT_FOUND
+				);
+	}
+}
+
+
+
+==================================POSTMAN=================
+ GET   http://localhost:9898/products/2   SEND
+--------------------------------------------------------

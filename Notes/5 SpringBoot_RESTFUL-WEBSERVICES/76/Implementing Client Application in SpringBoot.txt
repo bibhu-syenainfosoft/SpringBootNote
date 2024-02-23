@@ -1,0 +1,188 @@
+				Date : 14/12/2020
+				Spring Boot 7AM  
+				   Mr. RAGHU
+			----------------------------------
+SpringBoot AOP#2 https://www.youtube.com/watch?v=8DG-J8_WfUE
+-------------------------------
+JUnit 5.x
+https://www.youtube.com/c/NareshIT/search?query=raghu%20junit
+
+Mockito Overview:
+05/12/2020
+https://youtu.be/6hmx--O8PYE
+https://www.youtube.com/watch?v=6hmx--O8PYE&t=990
+----------------------------------------------
+Spring Boot Unit Testing
+07/12/2020
+https://youtu.be/pFLFKrCknB0
+https://www.youtube.com/watch?v=pFLFKrCknB0&feature=youtu.be
+08/12/2020
+https://www.youtube.com/watch?v=GgWuE-k1_nI&feature=youtu.be
+
+-------------------------------------------------------------------
+			Spring Boot REST : Client Application
+
+*) We can even define Client Application using SpringBoot/Spring REST concept
+  by using a class RestTemplate.
+
+*) RestTemplate is a class, that supports making HTTP calls (GET/POST/PUT..)
+*) By using this class, we can make request to any REST API (Even non-java apps).
+
+*) Default data format is JSON. (XML is not supported).
+*) RestTemplate is not auto-configured object, ie we must create object 
+   to this class before making http call.
+
+Q) How can we consume a REST API?
+   How to access/call/use REST API in spring Boot?
+A) Using Client code : RestTemplate.
+
+
+========================Provider code===================================
+#1. Name : SpringBoot2ProviderApp
+    Dep  : Spring web
+
+#2. RestController
+package in.nareshit.raghu.rest;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/employee")
+public class EmployeeRestController {
+
+	@GetMapping("/show")
+	public ResponseEntity<String> getMessage() {
+		return ResponseEntity.ok("HI");
+	}
+}
+
+==================== Consumer App ========================================
+#1. Name : SpringBoot2ConsumerApp
+    Dep  : Spring web
+
+#2. application.properties
+server.port=9898
+
+
+#3. Consumer Runner
+package in.nareshit.raghu.runner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+@Component
+public class ConsumerRunner implements CommandLineRunner {
+	
+	private Logger log = LoggerFactory.getLogger(ConsumerRunner.class);
+
+	@Override
+	public void run(String... args) throws Exception {
+		//1. create RestTemplate Object
+		RestTemplate rt = new RestTemplate();
+
+		//2. Define URL
+		String url = "http://localhost:8080/employee/show";
+
+		//3. make HTTP call and get Response
+		//(URL,ResponseType)
+		ResponseEntity<String> resp = rt.getForEntity(url, String.class);
+
+		//4. print details/use them
+		log.info("Status code {} " , resp.getStatusCode().name() ); //name
+		log.info("Status val {} " , resp.getStatusCodeValue() ); //number
+		log.info("Body {} " , resp.getBody() ); //Response
+
+		
+		//5. Stop Server (just for test purpose)
+		System.exit(0);
+		
+	}
+
+}
+================Consumer code #2========================================================
+*) application.properties
+server.port=9898
+my.app.provider.ip=localhost
+my.app.provider.port=8080
+
+*)AppConfig
+
+package in.nareshit.raghu.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class AppConfig {
+
+	@Bean
+	public RestTemplate rtemplate() {    //In this case only single object is created.
+		return new RestTemplate();
+	}
+}
+
+*) Modified Runner class
+package in.nareshit.raghu.runner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+@Component
+public class ConsumerRunner implements CommandLineRunner {
+	
+	private Logger log = LoggerFactory.getLogger(ConsumerRunner.class);
+	
+	@Autowired
+	private RestTemplate rt;//HAS-A
+	
+	@Value("${my.app.provider.ip}")
+	private String providerIp;
+	
+	@Value("${my.app.provider.port}")
+	private String providerPort;
+
+	@Override
+	public void run(String... args) throws Exception {
+		//1. create RestTemplate Object
+		//RestTemplate rt = new RestTemplate();
+
+		//2. Define URL
+		//String url = "http://localhost:8080/employee/show";
+		String url = new StringBuffer()
+				.append("http://")
+				.append(providerIp)
+				.append(":")
+				.append(providerPort)
+				.append("/employee/show")
+				.toString();
+
+		//3. make HTTP call and get Response
+		//(URL,ResponseType)
+		ResponseEntity<String> resp = rt.getForEntity(url, String.class);
+
+		//4. print details/use them
+		log.info("Status code {} " , resp.getStatusCode().name() ); //name
+		log.info("Status val {} " , resp.getStatusCodeValue() ); //number
+		log.info("Body {} " , resp.getBody() ); //Response
+
+		
+		//5. Stop Server (just for test purpose)
+		System.exit(0);
+		
+	}
+
+}

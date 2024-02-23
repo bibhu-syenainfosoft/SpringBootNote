@@ -1,0 +1,268 @@
+				Date : 21/12/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+				---------------
+Spring Data REST:
+ https://www.youtube.com/watch?v=uptKDrR6bLg
+
+Redis # Spring Boot
+ https://www.youtube.com/watch?v=HBmlNMGh9O0
+ https://www.youtube.com/watch?v=IwYEdZOmY6g
+
+
+			Spring Boot Unit Test - test methods
+			-------------------------------------
+
+Steps,
+#1. Create one HTTP Request (URL,Method Type, Header, Body)
+
+MockHttpServletRequestBuilder request =
+ MockMvcRequestBuilders.get("/rest/products/all");
+
+#2. Execute Request and get Result.
+
+MvcResult result = mockMvc.perform(request).andReturn();
+
+#3. Read Response Object from Result.
+
+MockHttpServletResponse response = result.getResponse();
+
+#4. Validate Response(assert data)
+    [status, content/content-type..]
+
+if( a>b && c<d || x==y ) {
+   fail();
+}
+
+--RestController JUnit test case---
+package in.nareshit.raghu.test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+@SpringBootTest(webEnvironment = WebEnvironment.MOCK)
+@AutoConfigureMockMvc
+@TestPropertySource("classpath:application-test.properties")
+public class TestProductRestController {
+
+	@Autowired
+	private MockMvc mockMvc; 
+
+	@Test
+	@Disabled
+	public void testSaveProduct() throws Exception {
+		//1. Create Dummy Http Request
+		MockHttpServletRequestBuilder request =
+				MockMvcRequestBuilders
+				.post("/rest/products/save")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"prodCode\":\"ABC\", \"prodCost\":3.3}")
+				;
+
+		//2. Execute Request and Get Result
+		MvcResult result = mockMvc.perform(request).andReturn();
+
+		//3. Read response object from result
+		MockHttpServletResponse response = result.getResponse();
+
+		//4. validate/assert details
+		//expected Status, actual Status
+		assertEquals(HttpStatus.CREATED.value(), response.getStatus());
+		//if it is not saved.
+		if(!response.getContentAsString().contains("saved")) {
+			fail();
+		}
+
+	}
+
+	@Test
+	@Disabled
+	public void testGetAllProducts() throws Exception {
+		//#1. Create one HTTP Request (URL,Method Type, Header, Body)
+		MockHttpServletRequestBuilder request =
+				MockMvcRequestBuilders.get("/rest/products/all");
+
+		//#2. Execute Request and get Result.
+		MvcResult result = mockMvc.perform(request).andReturn();
+
+		//#3. Read Response Object from Result.
+
+		MockHttpServletResponse response = result.getResponse();
+
+		//#4. Validate Response(assert data)
+
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		assertEquals("application/json", response.getContentType());
+		String resBody = response.getContentAsString();
+		if(resBody==null || resBody.length()==0) {
+			fail();
+		}
+
+	}
+
+	@Test
+	@Disabled
+	public void testDeleteProductExist() throws Exception {
+		//1. create request
+		MockHttpServletRequestBuilder request =
+				MockMvcRequestBuilders.delete("/rest/products/remove/1");
+
+		//#2. Execute Request and get Result.
+		MvcResult result = mockMvc.perform(request).andReturn();
+
+		//#3. Read Response Object from Result.
+
+		MockHttpServletResponse response = result.getResponse();
+
+		//#4. Validate Response(assert data)
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		if(!response.getContentAsString().contains("deleted")) {
+			fail();
+		}
+	}
+
+
+	@Test
+	@Disabled
+	public void testDeleteProductNotExist() throws Exception {
+		//1. create request
+		MockHttpServletRequestBuilder request =
+				MockMvcRequestBuilders.delete("/rest/products/remove/2020");
+
+		//#2. Execute Request and get Result.
+		MvcResult result = mockMvc.perform(request).andReturn();
+
+		//#3. Read Response Object from Result.
+
+		MockHttpServletResponse response = result.getResponse();
+
+		//#4. Validate Response(assert data)
+		assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatus());
+		if(!response.getContentAsString().contains("Not Exist")) {
+			fail();
+		}
+	}
+
+	@Test
+	public void testUpdateProduct() throws Exception {
+		//1. create request
+		MockHttpServletRequestBuilder request =
+				MockMvcRequestBuilders
+				.put("/rest/products/modify/2")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"prodCode\":\"SAMSUNG TV\", \"prodCost\":5000.0}")
+				;
+
+		//#2. Execute Request and get Result.
+		MvcResult result = mockMvc.perform(request).andReturn();
+
+		//#3. Read Response Object from Result.
+		MockHttpServletResponse response = result.getResponse();
+
+		//4. validate
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		//assertEquals(HttpStatus.RESET_CONTENT.value(), response.getStatus());
+		if(!response.getContentAsString().contains("Updated")) {
+			fail();
+		}
+	}
+
+	@Test
+	@Disabled
+	public void testUpdateProductNotExist() throws Exception {
+		// TODO : ____________
+		// Hint: similer to Delete not exist 
+	}
+	
+	@Test
+	@Disabled
+	public void testGetOneProductNotExist() throws Exception {
+		// TODO : ____________
+		// Hint: similer to Delete not exist 
+	}
+	
+	@Test
+	@Disabled
+	public void testGetOneProductExist() throws Exception {
+		// TODO : ____________
+		// Hint: similer to Delete exist 
+	}
+
+}
+
+========================================================================
+			   MongoDb Setup
+
+Step#1
+Download Link:
+https://www.mongodb.com/try/download/community
+
+Choose Details:
+Version : 3.6
+Platform : Windows
+Package  : MSI
+
+Click on Download
+
+=> Double click => Next > Next > Finish
+*** Do not Install Mongo Compass (uncheck Checkbox)
+---------------------
+Step#2 Set MongoDB Path
+
+S#1 Copy MongoDB Path
+ C:\Program Files\MongoDB\Server\3.6\bin
+S#2 Set Path in Environment Variables
+> My Computer > Right click > choose properties
+> Advanced System Setings > Goto Advanced Option
+> Click on Environment Variable > Goto System variables
+> edit PATH variable > add above MongoDB Path at starting
+> Click OK > Ok > Finish
+
+----------------------------
+Step#3 Commands
+Start MongoDb Server
+
+cmd> mongod
+
+Start MongoDb Client
+
+cmd> mongo
+
+======================================================================
+			Basic Mongo Commands
+
+#1. View all Database
+> show databases
+
+#2. Use/Goto Database
+> use sample
+(if it not exist, it is created)
+
+#3. View Collections(similer to tables)
+> show collections
+
+#4. Insert Data
+> db.collectionName.insert({JSON FORMAT})
+
+> db.student.insert({"empId":10,"empName":"SAM","empSal":3.3});
+
+#5. View/Print Data
+
+db.student.find();
+> db.student.find().pretty();
+-----------------------------------------------------------------------------

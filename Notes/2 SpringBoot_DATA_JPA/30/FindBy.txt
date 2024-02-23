@@ -1,0 +1,16 @@
+
+===================================================================
+                  Projections Using Find By
+
+Display/select only required columns but not all.
+
+Steps for projections:
+---------------------
+1. Define one interface with any name inside Repository.
+2. Define abstract methods (looks like get___() method syantx) using variables.
+     datatype getVariableName()
+3. Use this interface as Return type for findBy method 
+   List<interface name>  findBy___(__)
+
+===================================================================
+

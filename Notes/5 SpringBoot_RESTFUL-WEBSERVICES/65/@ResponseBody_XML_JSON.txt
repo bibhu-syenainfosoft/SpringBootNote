@@ -1,0 +1,228 @@
+	Java                               JSON
+	-------------------------------------------
+	String                            -NA-  
+
+        Object                      { "key":val, "key":val,....}
+
+ *) Note : in class variable--> in JSON key
+           variable data -----> value in JSON
+
+      List<String>/Set<String>        [ val, val, val,..... ]	   
+
+      List<T>/Set<T>                  [  { }, { }, { },....]
+
+      Map<K,V>                        { "key":val, "key":val,....}
+
+*) Note: All values in JSON are same data-type for Map
+
+Array Functions in Java Script:- 
+https://www.w3schools.com/js/js_array_methods.asp
+
+*) MongoDB stores data in JSON format.
+*) In DB(Table), in Java(Collections), In UI(JSON)
+
+----code------------
+Name : SpringBoot2RestOutputMediaType
+Dep  : Web, Lombok, DevTools
+
+*)Model clases
+package in.nareshit.raghu.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Employee {
+
+	private Integer eid;
+	private String ename;
+}
+---------
+package in.nareshit.raghu.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Vendor {
+
+	private Integer vid;
+	private String vcode;
+}
+-----------
+package in.nareshit.raghu.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Product {
+
+	private Integer pid;
+	private String pcode;
+	
+	private Model mob;
+}
+-------------
+package in.nareshit.raghu.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Model {
+
+	private Integer mid;
+	private String mcode;
+	private Double mcost;
+	
+	private Vendor vob;
+}
+---------------------
+*) RestController
+package in.nareshit.raghu.rest;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import in.nareshit.raghu.model.Employee;
+import in.nareshit.raghu.model.Model;
+import in.nareshit.raghu.model.Product;
+import in.nareshit.raghu.model.Vendor;
+
+@RestController
+public class EmployeeRestController {
+
+	@GetMapping("/a")
+	public String showA() {
+		return "HELLO";
+	}
+	
+	@GetMapping("/b")
+	public Employee showB() {
+		return new Employee(10,"A");
+	}
+	
+	@GetMapping("/c")
+	public List<String> showC() {
+		return Arrays.asList("A","B","C");
+	}
+	
+	@GetMapping("/cc")
+	public Set<String> showCC() {
+		return Set.of("A","B","C");
+	}
+	
+	@GetMapping("/d")
+	public List<Employee> showD() {
+		return Arrays.asList(
+				new Employee(50, "E1"),
+				new Employee(51, "E2"),
+				new Employee(52, "E3")
+				);
+	}
+	
+	@GetMapping("/e")
+	public Map<String,String> showE() {
+		return Map.of("K1","V1","K2","V2");
+	}
+	
+	@GetMapping("/f")
+	public Product showF() {
+		return new Product(
+				555, "PEN",
+				new Model(
+						998, "RED", 50.0, 
+						new Vendor(85850, "NIT")
+						)
+				);
+	}
+	
+	
+}
+
+*) Goto POSTMAN and Enter URLs like
+
+localhost:8080/a
+localhost:8080/b
+localhost:8080/c
+localhost:8080/cc
+localhost:8080/d
+localhost:8080/e
+
+=======================================================================
+Q) What is the difference between using a Direct DataType type and ResponseEntity
+   for RestController method return type?
+
+--example--
+@RestController
+public class StudentRestController {
+
+	@GetMapping("/sa")
+	public String showA() {
+		return "WELCOME";
+	}
+	
+	@GetMapping("/sb")
+	public ResponseEntity<String> showB() {
+		return new ResponseEntity<String>("WELCOME",HttpStatus.OK);
+	}
+	
+	
+}
+
+A) ResponseEntity is a standard (= Status + Header + Body). Here we can provide
+   specific Status for client machine and any header if they want.
+
+   If we use Direct DataType like String , it indicates only Body. On success,
+   default status is taken as 200/OK, No specific header added.
+
+
+	=================================================================
+		   Spring Boot REST - Content Negotiation
+
+=> by default , Spring Boot REST applications gives JSON is the default output format.
+=> To enable XML concept add below dependency,
+
+<dependency>
+    <groupId>com.fasterxml.jackson.dataformat</groupId>
+    <artifactId>jackson-dataformat-xml</artifactId>
+</dependency>
+
+and also send One Request Header Param :  Accept = application/xml
+
+--code---
+@RestController
+public class EmployeeRestController {
+
+	@GetMapping("/b")
+	public Employee showB() {
+		return new Employee(10,"A");
+	}
+}
+----------------POSTMAN---------------------------
+GET  http://localhost:8080/b      SEND
+          Header
+   [Accept]      [application/xml]
+-------------------------------------------------
+
+*) Note : If above XML Dependency is not added in Spring Boot REST App, then
+   if we try to do 'Content Negotiation' using Accept = application/xml
+   then Spring Boot gives Http Status - 406 Not Acceptable.

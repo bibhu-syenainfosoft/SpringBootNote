@@ -1,0 +1,178 @@
+				Date : 19/11/2020
+				Spring Boot 7AM
+				   Mr. RAGHU
+			--------------------------------
+code Link:
+http://www.mediafire.com/file/do94pfdb3g9i7e0/SpringBoot2WebMvcJSPMySQLEx19112020RAGHU.zip/file
+
+---Error and Exception handling in WEB MVC---
+*) https://www.youtube.com/c/NareshIT/search?query=error%20raghu
+
+Log4J:-
+*) https://www.youtube.com/c/NareshIT/search?query=log%20raghu
+
+*) In Spring F/w, WEB MVC, has provided one in-built controller to handled problems
+   in applications (Error and Exception handling) ie BasicErrorController
+   which takes care of problems like : 404 URL not Found, NullPointerException..etc
+
+*) For every Exception, Error page is 500 - INTERNAL SERVER ERROR.
+   Finally 'White Label Error Page' is given by FC which is not a readable format to
+   end user.
+=============================Custom Exception in Project============================
+a. Create our own Custom Exception class
+
+package in.nareshit.raghu.exception;
+
+public class EmployeeNotFoundException extends RuntimeException {
+
+	private static final long serialVersionUID = 1L;
+
+	public EmployeeNotFoundException() {
+		super();
+	}
+	
+	public EmployeeNotFoundException(String messsage) {
+		super(messsage);
+	}	
+}
+ b. In Service Layer throw exceptions based on condition check.
+
+---basic code----------------------------------------------------------------
+Optional<Employee> opt = repo.findById(id);
+if(opt.isPresent()) {
+	Employee e = opt.get();
+	return e;
+} else {
+	throw new EmployeeNotFoundException("Employee '"+id+"' Not Exist");
+}
+
+--Advanced Code using Supplier<T> (I) with Lambda Expression-----
+Employee e = repo.findById(id)
+	.orElseThrow(
+		()-> new EmployeeNotFoundException("Employee '"+id+"' Not Exist")
+	);
+return e;
+--------------------------------------------------------------------------------
+
+c. In controller , call logic inside try-catch block and throw back exception to FC
+
+	try {
+		....//code
+			
+	} catch (EmployeeNotFoundException e) {
+		e.printStackTrace();
+		throw e;  //throwing back to FC
+	} 
+
+d. Design Error Page.
+     webapp
+       |-WEB-INF
+           |-pages
+              |-error
+	         |- 500.jsp
+
+---500.jsp-------
+<html>
+<body>
+<h3>PROBLEM IN EXECUTION!!</h3>
+${message}
+</body>
+</html>
+----------------
+
+----404.jsp----
+<html>
+<body>
+<h3>Resource Not Found, Please check your request</h3>
+</body>
+</html>
+--------
+
+*) Note: For every error display one page : error.jsp  (create page inside 'pages' folder)
+   webapp
+       |-WEB-INF
+           |-pages
+              |-error.jsp
+
+*) For Every status code, if we need a specific output then create folder 'error' 
+   and inside that folder create <status_code>.jsp 
+
+      webapp
+       |-WEB-INF
+           |-pages
+              |-error
+	         |-404.jsp
+		 |-500.jsp
+
+*) Here All Problems are Handled by one Controller ie 'BasicErrorController'.
+  (ctrl+shift+T), logic exist inside method errorHtml(...)
+
+================================================================================
+Lambda Expression:-
+  (params) -> { method body };
+
+interface Grade {
+  int getCode();
+}
+
+Grade g = () ->  { return 100; };
+Grade g = () -> 100;
+
+=>
+class Test{
+  void m1(Grade g) {}
+}
+Test ob = new Test();
+ob.m1(g);
+--or--
+ob.m1(() -> 100);
+** If method param is Functional Interface then we can pass lambda expressions
+   as method param.
+
+---------------------
+interface Grade<T> {
+  T getCode();
+}
+
+Grade<String> g = () -> "Hello";
+Grade<Employee> g = () -> new Employee();
+Grade<MyException> g = () -> new MyException();
+
+---------
+interface Supplier<T> {
+   T get();
+}
+
+Supplier<String>  s = () -> "TEST";
+Supplier<EmployeeNotFoundException>  s = () -> new EmployeeNotFoundException();
+
+
+class Optional<T> {
+  T orElseThrow(Supplier<T> s) { ... }
+}
+
+Optional<Employee>  opt = repo.findById(10);
+//opt.orElseThrow(s);
+opt.orElseThrow(() -> new EmployeeNotFoundException());
+
+--Very short code is--
+repo.findById(10).orElseThrow(() -> new EmployeeNotFoundException());
+
+================================================================================
+*) Note: In Error page we can display details like
+
+timestamp=Thu Nov 19 07:39:15 IST 2020, 
+status=500, 
+error=Internal Server Error, 
+trace=in.nareshit.raghu.exception.EmployeeNotFoundException: Employee '454' Not Exist
+message=Employee '454' Not Exist, 
+path=/delete
+
+Use EL like: ${message}
+
+Q) What is Exception ? provide keywords related to exception handling?
+Q) What is Checked and Unchecked exception?
+Q) Difference b/w throw and throws?
+Q) What is Exception Narowing and Widening?
+Q) What are rules we should follow for exception while overriding a method?
+------------------------------------------------------------------------

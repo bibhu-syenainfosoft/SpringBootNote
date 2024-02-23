@@ -1,0 +1,223 @@
+				Date : 16/11/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+			       -----------------
+Spring Boot DevTools:-
+ To avoid application re-start(or server restart) for small changes in code
+ DevTools is used at Developer System.
+ It internally uses LiveReload Server. If any source code file (.java,.jsp...) gets
+ modified, then it will get trigerred and updates the same to actual server.
+
+=> DevTools is a good tool for Development Environment only.
+  (Not For Testing or Production).
+
+pom.xml:-
+<dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-devtools</artifactId>
+   <scope>runtime</scope>
+   <optional>true</optional>
+</dependency>
+
+*) LiveReload server is running on port 35729. It will read modified source files
+  after saving files(press ctrl+s), updates same content back to actual server.
+---------------------------------------------------------------------------------
+				Layers Design
+
+To implement any application (web based) in standard way, we can use Layers Design.
+Here, we use 3 layers, given as
+a) PL : Presentation Layer  ( MVC )
+b) SL : Service Layer       ( calculation/operations..etc )
+c) DAL: Data Access Layer   ( DB Operations )
+
+--------------------setup and code---------------------------------------------
+1. Create Spring Starter Project
+Name : SpringBoot2WebMvcJSPMySQLEx
+Dep  : Spring Web, MySQL, Data Jpa, Lombok, DevTools, Tomcat Embedded Jasper.
+
+2. application.proprties
+---------------------------------------------------------------------------
+# Server
+server.port=9898
+
+#Database connection
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://localhost:3306/boot7am
+spring.datasource.username=root
+spring.datasource.password=root
+
+# JPA Props
+spring.jpa.show-sql=true
+spring.jpa.hibernate.ddl-auto=create
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+
+# MVC
+spring.mvc.view.prefix=/WEB-INF/pages/
+spring.mvc.view.suffix=.jsp
+---------------------------------------------------------------------------
+
+3. Model class
+
+package in.nareshit.raghu.model;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import lombok.Data;
+
+@Data
+@Entity
+@Table(name="emptab")
+public class Employee {
+	@Id
+	@GeneratedValue
+	private Integer eid;
+	
+	private String ename;
+	private String email;
+	
+	private Double esal;
+	private String dept;
+	
+	private Double hra;
+	private Double da;
+	
+}
+
+4. Repository Interface
+package in.nareshit.raghu.repo;
+import org.springframework.data.jpa.repository.JpaRepository;
+import in.nareshit.raghu.model.Employee;
+
+public interface EmployeeRepository 
+	extends JpaRepository<Employee, Integer> {
+
+}
+
+
+5. Service Interface
+
+package in.nareshit.raghu.service;
+import in.nareshit.raghu.model.Employee;
+public interface IEmployeeService {
+
+	Integer saveEmployee(Employee e);
+	
+}
+-------------------------------------------------------------
+6. Service Impl
+
+package in.nareshit.raghu.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import in.nareshit.raghu.model.Employee;
+import in.nareshit.raghu.repo.EmployeeRepository;
+import in.nareshit.raghu.service.IEmployeeService;
+
+@Service    //calculations,logics, TxManagement
+public class EmployeeServiceImpl implements IEmployeeService {
+	
+	@Autowired
+	private EmployeeRepository repo; //HAS-A
+	
+	@Override
+	public Integer saveEmployee(Employee e) {
+		//calculations
+		double esal = e.getEsal();
+		double hra = esal * 20/100.0;
+		double da = esal * 10/100.0;
+		e.setHra(hra);
+		e.setDa(da);
+		//save employee
+		e = repo.save(e);
+		return e.getEid();
+	}
+}
+
+
+------------------------------------------------------------------
+7. Controller
+package in.nareshit.raghu.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import in.nareshit.raghu.model.Employee;
+import in.nareshit.raghu.service.IEmployeeService;
+
+@Controller
+public class EmployeeController {
+	@Autowired
+	private IEmployeeService service; //HAS-A
+	
+	//1. Show Register Page
+	@GetMapping("/register")
+	public String showReg() {
+		return "EmployeeReg";
+	}
+	
+	
+	//2. Save Employee Data
+	@PostMapping("/save")
+	public String saveEmp(
+			@ModelAttribute Employee employee,
+			Model model) 
+	{
+		//call service layer
+		Integer eid = service.saveEmployee(employee);
+		String message = " Employee '"+eid+"' saved ";
+		model.addAttribute("msg", message);
+		return "EmployeeReg";
+	}
+	
+	
+}
+
+
+8. UI Pages: EmployeeReg.jsp
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<H3>WELCOME TO EMPLOYEE REGISTER PAGE!!</H3>
+<form action="save" method="POST">
+<pre>
+NAME   : <input type="text" name="ename"/>
+EMAIL  : <input type="text" name="email"/>
+SALARY : <input type="text" name="esal"/>
+DEPT   : <select name="dept">
+			<option value="">-SELECT-</option>
+			<option value="DEV">DEV</option>
+			<option value="QA">QA</option>
+			<option value="BA">BA</option>
+		</select>
+		
+   <input type="submit" value="Add Employee"/>
+</pre>
+</form>
+${msg}
+</body>
+</html>
+=====================================================================
+Q) What is the difference between below annotations?
+
+@Component  : To create object to current class only.
+@Repository : create Object + DB Operation (in Spring Boot not required)
+@Service    : create Object + calculation/logics, operations, Transacton management...etc
+@Controller : create Object + HTTP Protocol (Req/Response)
+
+@RestController: create object + REST SUPPORT

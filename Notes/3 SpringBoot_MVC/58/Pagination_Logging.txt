@@ -1,0 +1,148 @@
+				Date : 20/11/2020
+				Spring Boot 7AM
+				   Mr. RAGHU
+			--------------------------------
+All PDFs:
+https://www.mediafire.com/file/w5x9w5vcmkwkkdv/RaghuSirNareshITJavaPdfs.zip/file
+
+Workspace Link:
+http://www.mediafire.com/file/bam1kr91zruulqz/SpringBoot7AMWorkspace_20112020_RAGHU.zip/file
+
+			Pagination to Employee Data Page
+
+=> To do pagination , we should pass 2 inputs : page number and page size
+   they are converted into Pageable object.
+
+     URL:  .../all?page=2&size=3
+
+=> page number starts from zero (index number). But in UI we will start from one.
+   
+=> If we are calling /all URL first time, no pagination input may be provided.
+   So, use default values for pagination using annotation:
+                    @PageableDefault(page=0,size=3)
+
+=> Finally call method findAll(Pageable) that returns Page<T> which contains
+   data, meta data(isFirst, isLast, hasNext, hasPrevious...etc).
+
+=> Here Pageable and Page are defined in package : org.springframework.data.domain
+
+----------------code changes---------------------------------------------
+1. Service Layer
+
+---IEmployeeService---
+  Page<Employee> getAllEmployees(Pageable pageable);
+
+--EmployeeServiceImpl--
+  public Page<Employee> getAllEmployees(Pageable pageable) {
+	Page<Employee>  page = repo.findAll(pageable);
+	return page;
+  }
+
+2. EmployeeController
+
+	@GetMapping("/all")
+	public String showAllEmps(
+			@PageableDefault(page=0,size=3)Pageable pageable,
+			Model model) 
+	{
+		Page<Employee> page = service.getAllEmployees(pageable);
+		List<Employee> list = page.getContent();
+		
+		model.addAttribute("list", list);
+		model.addAttribute("page", page);
+		
+		return "EmpData";
+	}
+
+
+3. UI : EmpData
+
+(after table closed..)
+<hr/>
+
+** If current page is not a first page then show First page Link
+
+<c:if test="${!page.isFirst()}">
+	<a href="?page=0">FIRST</a> &nbsp;&nbsp;
+</c:if>
+
+** If current page has previous page then show Link : current page number -1
+
+<c:if test="${page.hasPrevious()}">
+	<a href="?page=${page.getNumber()-1}">PREVIOUS</a> &nbsp;&nbsp;
+</c:if>
+
+** Display page numbers from zero to 'total pages - 1'
+
+<c:forEach var="i" begin="0" end="${page.getTotalPages()-1}">
+<a href="?page=${i}">${i+1}</a> &nbsp;&nbsp;
+</c:forEach>
+
+
+** If current page has next page then show Link : current page number + 1
+
+<c:if test="${page.hasNext()}">
+	<a href="?page=${page.getNumber()+1}">NEXT</a> &nbsp;&nbsp;
+</c:if>
+
+** If current page is not a last page then show LAST page Link
+
+<c:if test="${!page.isLast()}">
+	<a href="?page=${page.getTotalPages()-1}">LAST</a> &nbsp;&nbsp;
+</c:if>
+
+<hr/>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" >
+
+---------------------------------------------------------------------------------
+https://www.youtube.com/c/NareshIT/search?query=log%20raghu
+
+Note: In Simple case we are only seeing the errors in console then findout the error but in realtime when the projects will move to live environment then at that time console is not there so we have to use Logger concept.
+
+Simple Logging Facade(SLF4J) is a simplified concept of Log4J that handles logging setup
+like root logger, appenders, layout.
+
+Here, in Boot applications we should provide keys in properties file and logger object
+inside controller class.
+
+#1. Create Logger object inside class:
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+private Logger log = LoggerFactory.getLogger(EmployeeController.class);
+
+#2. Provide info and error details in controller#methods
+
+	@PostMapping("/save")
+	public String saveEmp(
+			@ModelAttribute Employee employee,
+			Model model) 
+	{
+		log.info("ENTERED INTO SAVE EMPLOYEE METHOD");
+		try {
+			//call service layer
+			Integer eid = service.saveEmployee(employee);
+			log.info("EMPLOYEE SAVED");
+			String message = " Employee '"+eid+"' saved ";
+			model.addAttribute("msg", message);
+		} catch (Exception e) {
+			log.error("UNABLE TO PROCESS SAVE EMPLOYEE {}",e.getMessage());
+			e.printStackTrace();
+		}
+		log.info("ABOUT TO RETURN REPONSE FROM SAVE EMPLOYEE METHOD");
+		return "EmployeeReg";
+	}
+
+#3. application.properties
+logging.file.name=E:/logs/empapp.log
+#logging.level.in.nareshit.raghu=INFO
+#logging.pattern.file=%d{dd-MM-YY HH:mm:ss SSS} %C %M [%p] %m %n
+#logging.file.max-size=10MB
+
+
+=========================================================================
+Q) JSP Internal conversion flow?
+A)

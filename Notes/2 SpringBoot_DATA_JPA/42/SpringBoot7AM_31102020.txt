@@ -1,0 +1,134 @@
+			Date : 31/10/2020
+			Spring Boot 7AM
+			  Mr. RAGHU
+			-------------
+		Stored Procedures Calls using Hibernate with JPA
+				Part-2
+
+*) calling Stored Procedure using IN parameter
+
+2. Only IN param, No OUT param.
+DELIMITER $$
+CREATE PROCEDURE GETEMPBYDEPT(IN edept VARCHAR(25))
+ BEGIN
+   SELECT * FROM EMPLOYEE E WHERE  E.EMP_DEPT = edept;
+ END $$
+DELIMITER ;
+
+
+*) Runner class code:
+package in.nareshit.raghu.runner;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.ParameterMode;
+import javax.persistence.StoredProcedureQuery;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import in.nareshit.raghu.model.Employee;
+
+@Component
+public class JpaBasedRunner implements CommandLineRunner {
+	@Autowired
+	private EntityManager em;
+	
+	@Override
+	public void run(String... args) throws Exception {
+		//Step#1 create StoredProcedureQuery object using em
+		//by passing procedureName, resultClasses
+		StoredProcedureQuery query = em.createStoredProcedureQuery("GETEMPBYDEPT", Employee.class);
+		
+		//step#2 register and provide inputs,output params
+		
+		//register IN param
+		query.registerStoredProcedureParameter("edept", String.class, ParameterMode.IN);
+		
+		//provide value
+		query.setParameter("edept", "DEV");
+		
+		//step#3 Execute Query
+		List<Employee> emps =  query.getResultList();
+		
+		//step#4 print result
+		emps.forEach(System.out::println);
+		
+		
+	}
+}
+------------------------------------------------------------
+3. Using both IN and OUT Parameters
+DELIMITER $$
+CREATE PROCEDURE GETEMPBYDESGCOUNT(IN edesg VARCHAR(25), OUT dcount INT)
+ BEGIN
+   SELECT COUNT(*) INTO dcount FROM EMPLOYEE E WHERE  E.emp_desg = edesg;
+ END $$
+DELIMITER ;
+
+
+*) Runner class code:
+package in.nareshit.raghu.runner;
+
+import javax.persistence.EntityManager;
+import javax.persistence.ParameterMode;
+import javax.persistence.StoredProcedureQuery;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+@Component
+public class JpaBasedRunner implements CommandLineRunner {
+	@Autowired
+	private EntityManager em;
+	
+	@Override
+	public void run(String... args) throws Exception {
+		//Step#1 create StoredProcedureQuery object using em
+		//by passing procedureName, resultClasses
+		StoredProcedureQuery query =em.createStoredProcedureQuery("GETEMPBYDESGCOUNT");
+		
+		//step#2 register and provide inputs,output params
+
+		//register IN/OUT param
+		query.registerStoredProcedureParameter("edesg", String.class, ParameterMode.IN);
+		query.registerStoredProcedureParameter("dcount", Integer.class, ParameterMode.OUT);
+		
+		//provide value only for IN param
+		query.setParameter("edesg", "MGR");
+		
+		//step#3 Execute Query
+		query.execute(); //for OUT PARAMS only
+		
+		//read output value
+		int count = (Integer)query.getOutputParameterValue("dcount");
+		
+		//step#4 print result
+		System.out.println("COUNT IS :" + count);
+		
+	}
+}
+------------------------------------------------------------------------------
+Q) Can we use SessionFactory or Session objects in Spring Boot Data JPA?
+A) NO. We can write code using JPA Specification API, Vendor API is selected based on runtime Framework.
+
+----Valid------
+@Autowired
+private EntityManager em;
+	
+@Autowired
+private EntityManagerFactory emf;
+
+---Invaild---
+@Autowired
+private Session ses;
+
+@Autowired
+private SessionFactory sf;
+
+Videos:
+https://www.youtube.com/watch?v=HBmlNMGh9O0
+https://www.youtube.com/watch?v=IwYEdZOmY6g

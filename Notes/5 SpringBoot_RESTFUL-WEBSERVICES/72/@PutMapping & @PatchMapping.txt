@@ -1,0 +1,159 @@
+				Date : 09/12/2020
+				Spring Boot 7AM
+				 Mr. RAGHU
+			   ------------------------
+
+http://www.mediafire.com/file/nv2m3n8ojml066s/SpringBoot2RestCrudApp_RAGHU_09122020.zip/file
+https://www.mediafire.com/file/w5x9w5vcmkwkkdv/RaghuSirNareshITJavaPdfs.zip/file
+
+		Spring Boot REST : PUT operation (Modified Code)
+
+=> In last session code, we are reading request object and updating to DB.
+=> Here, we have 2 issues.
+  a) If ProdCost is null then while calculating discount and GST getting null pointer exception
+  b) If we sent only ProdCost then prodCode is updated with null value.
+    (Not storing old data)
+
+=> Now, we should define code in such a way that updates only non-null values
+   and calculate disc, gst only if cost is not null.
+
+=> Read DB object based on Id and copy request object data based on variables
+   which are not null, finally update db object back to Database.
+
+---New code----------------
+package in.nareshit.raghu.util;
+
+import in.nareshit.raghu.model.Product;
+
+public interface ProductUtil {
+
+	//JDK#8 --static methods in interface
+	public static void copyNonNullValues(
+			Product db, Product request) 
+	{
+		//copy non-null values
+		if(request.getProdCode()!=null)
+			db.setProdCode(request.getProdCode());
+		if(request.getProdCost()!=null)
+			db.setProdCost(request.getProdCost());
+	}
+}
+-----------
+	@PutMapping("/{id}")
+	public ResponseEntity<String> updateProduct(
+			@PathVariable Integer id,
+			@RequestBody Product product
+			)
+	{
+		Product db = service.getOneProduct(id);
+		ProductUtil.copyNonNullValues(db, product);
+		service.updateProduct(db);
+		
+		return new ResponseEntity<String>("Product Updated!!",HttpStatus.OK);
+	}
+-------------------
+Possible POSTMAN Screens
+
+--------------------$1-------------------------------
+PUT    http://localhost:9898/products/1    SEND
+           BODY
+	       (*) raw     [JSON]
+{
+  "prodCode" : "PEN",
+  "prodCost" : 500.0
+}
+------------------------------------------------------
+
+
+--------------------$2-------------------------------
+PUT    http://localhost:9898/products/1    SEND
+           BODY
+	       (*) raw     [JSON]
+{
+  "prodCost" : 500.0
+}
+------------------------------------------------------
+
+--------------------$3-------------------------------
+PUT    http://localhost:9898/products/1    SEND
+           BODY
+	       (*) raw     [JSON]
+{
+  "prodCode" : "PEN"
+}
+------------------------------------------------------
+
+PATCH :
+ This is added in HTTP 1.1, it indicates one exact and partial data update.
+
+ALso we can modify partial data using PUT but for some coding standard PATCH is used.
+
+PUT v/s PATCH :
+PUT can be used for Either Full/Partial data update (for any no of variables/columns)
+PATCH is used only for specific variable/column update (not all, only partial)
+
+
+updateEmployee()---> PUT
+
+updateEmployeeEmailId()---> PATCH
+
+update product set prod_code=?, prod_cost=?, prod_disc=?, prod_gst=? where prod_id=?
+
+20 variables
+
+16 modified , 4 same as before
+
+updateProdCode()---> PATCH
+
+
+User(uid,uname,gen,pwd,emil, roles..)--55 variables
+----Password Update Screen----
+
+Pwd:  -----------
+Cnf Pwd: ---------
+
+UpdatePwd()  --PATCH
+UpdateEmail() --PATCH
+UpdateUsername()--PATCH
+-------------------------------------------------
+
+Note:
+=> @Query is used to define custom SELECT query
+=> If we want to define non-select query write @Query and also apply @Modifying
+   that indicates to Data JPA, this is not SELECT it is either UPDATE/DELETE.
+
+=> Also apply @Transactional for this method, which does commit(on success)
+   rollback (on failure).
+
+*** For non-select custom query  = @Query + @Modifying + @Transactional
+
+==========================================================
+DB : commit and rollback  are applied from NON-SELECT operations only.
+
+=> We can either commit or rollback after query executed.
+=> commit : update changes in DB from Cache
+=> Rollback : Cancel changes from cache. Do not provide to DB.
+
+---------------------------
+EntityManagerFactory emf;
+EntityManager em;
+Transaction tx;
+try {
+ //begin Transaction
+   tx= emg.beginTransaction();
+
+   //operation code
+   em.persist(obj);
+
+  //commit tx
+  tx.commit();
+} catch(Exception e) {
+  //rollback tx
+  tx.rollback()
+}
+
+
+*) in Spring f/w above logic is handled using @Transactional and Spring AOP internally.
+*) In Spring Boot, code is Given by Data JPA, so even Tx-Management also done by
+   Data JPA, but for custom queries we need to handle this annotation at service layer.
+

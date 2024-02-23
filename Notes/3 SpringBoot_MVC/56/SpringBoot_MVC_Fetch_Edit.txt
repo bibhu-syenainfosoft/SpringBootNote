@@ -1,0 +1,124 @@
+				Date : 18/11/2020
+				Spring Boot 7AM
+				   Mr. RAGHU
+			---------------------------------
+Error and Exception handling:-
+https://www.youtube.com/c/NareshIT/search?query=Error%20raghu
+
+Code Link:
+http://www.mediafire.com/file/v6kcncjyxbc6j69/SpringBoot2WebMvcJSPMySQLEx18112020RAGHU.zip/file
+
+			Spring Boot : WEB MVC + Data Jpa + MySQL (CURD)
+
+		Opration#4  Show Data in Edit Page and Update Operation
+
+a) Create one HyperLink (<a>) at Data Page (similar to Delete) for Edit Operation
+   using URL-Rewriting.
+
+*)EmpData.jsp:
+  <a href="edit?eid=${ob.eid}">EDIT</a>
+
+b) Define a method in service to get object by id
+ --IEmployeeService--
+ Employee getOneEmployee(Integer id);
+
+ --EmployeeServiceImpl--
+ public Employee getOneEmployee(Integer id) {
+	Optional<Employee> opt = repo.findById(id);
+	if(opt.isPresent()) {
+		Employee e = opt.get();
+		return e;
+	}
+	//if object not present
+	return null;
+  }
+
+
+c) In Controller read id (RequestParam) then call service to get object
+   send that data to UI using Model.
+
+--EmployeeController--
+	//5. Show Edit Page
+	@GetMapping("/edit")
+	public String showEdit(
+			@RequestParam Integer eid,
+			Model model)
+	{
+		//call service  method.
+		Employee emp = service.getOneEmployee(eid);
+	
+		//send to UI for FORM DATA
+		model.addAttribute("employee", emp);
+		   
+		return "EmployeeEdit";
+	}	
+
+d) Create new JSP File For Edit Operation
+
+---EmployeeEdit.jsp---
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h3>EMPLOYEE EDIT PAGE</h3>
+<form:form action="update" method="POST" modelAttribute="employee">
+<pre>
+ID  : <form:input path="eid" readonly="true"/>
+NAME: <form:input path="ename"/>
+MAIL: <form:input path="email"/>
+SAL : <form:input path="esal"/>
+DEPT: <form:select path="dept">
+		<form:option value="">-SELECT-</form:option>
+		<form:option value="DEV">DEV</form:option>
+		<form:option value="QA">QA</form:option>
+		<form:option value="BA">BA</form:option>
+      </form:select>
+	<input type="submit" value="Update"/>
+</pre>
+</form:form>
+</body>
+</html>
+
+
+e) Define a method in service for update object:
+--IEmployeeService--
+void updateEmployee(Employee e);
+
+--EmployeeServiceImpl--
+	public void updateEmployee(Employee e) {
+		if(repo.existsById(e.getEid())) {
+			//calculations
+			double esal = e.getEsal();
+			double hra = esal * 20/100.0;
+			double da = esal * 10/100.0;
+			e.setHra(hra);
+			e.setDa(da);
+			repo.save(e);
+		} else {
+			//throw EmployeeNotFoundException
+		}
+	}
+
+
+f) In Controller, read Form data from EDIT page and update if exist in DB
+	//6. On click update method
+	@PostMapping("/update")
+	public String updateEmp(
+			//read Form Data
+			@ModelAttribute Employee employee
+			) 
+	{
+		//call service
+		service.updateEmployee(employee);
+		//back to Data page
+		return "redirect:all";
+	}
+=========================================================================

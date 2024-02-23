@@ -1,0 +1,173 @@
+				Date : 04/11/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+				------------------
+*) Spring Boot Supports 3 Embedded Servers, they are
+ a) Apache Tomcat (default)
+ b) JBoss Undertow
+ c) Eclipse Jetty
+
+=> We can modify port number using key : server.port=____
+=>*** Here Embbeded Tomcat is called as Light-Weight Software.
+   ie it comes with only CATALINA(Servlet Container), NO JASPER(JSP Container)
+   is added.
+
+=> Spring Boot web application comes with default port number 8080.
+
+=> We can use any server, spring boot supports 3 embeeded servers.
+  To use other servers first exclude tomcat then add undertow or jetty.
+
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-web</artifactId>
+	<exclusions>
+		<exclusion>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+		</exclusion>
+	</exclusions>
+</dependency>
+
+then add 
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-undertow</artifactId>
+</dependency>
+
+---or----
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-jetty</artifactId>
+</dependency>
+
+**** Even embeeded server can also be used in production, not a issue (no problem).
+     But do not use Embedded Database in Production.
+
+Note: in Springboot there is no difference between Jar and War
+
+-----------------------------------------------------------------------------
+		Controller class rules in WEB MVC
+-----------------------------------------------------------------------------
+=> It must be a public class and should have one annotation @Controller
+ 
+   @Controller = Creates object to current class + Supports HTTP Protocol.
+
+=> Inside Controller class, we can define method (they are also called as
+   Request Processing methods).
+
+ *** Browser can not call our methods. So, they must be linked with URL(Path)
+     and Htttp Method Types (GET/POST..).
+
+ *** Path and Method Type are given by annotation:
+        @RequestMapping(value="/path",method=RequestMethod.GET)
+
+	@RequestMapping(value="/path",method=RequestMethod.POST)
+
+--example code---
+
+@Controller
+public class EmployeeController {
+
+   @RequestMapping(value="/show",method=RequestMethod.GET)
+   public  String showRegPage() {
+      //logic....
+      return "EmpRegister"; //ViewName
+   }
+
+   @RequestMapping(value="/insert",method=RequestMethod.POST)
+   public String saveEmp() {
+
+      return "EmpSuccess"; //View Name
+   }
+}
+
+*) @RequestMapping(value="/show",method=RequestMethod.GET)
+  Above line indicates, if Browser makes request and Current URL contains /show at
+  the end and type is GET, then its connected method - 'showRegPage()' is called by FC.
+  It returns ViewName -'EmpRegister'.        
+   
+*) @RequestMapping(value="/show") =>  Default Method Type is GET.
+
+=================Example One=====================================
+1. Create one Spring Starter Project
+ Name : SpringBoot2WebMvcFirstApp
+ Dep  : Spring web
+
+2. Goto pom.xml and add below dependency for JSP Pages
+<dependency>
+    <groupId>org.apache.tomcat.embed</groupId>
+    <artifactId>tomcat-embed-jasper</artifactId>
+</dependency>
+
+3. Define one Controller class
+package in.nareshit.raghu.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+public class EmployeeController {
+	
+	//@RequestMapping(value = "/show",method = RequestMethod.GET)
+	@RequestMapping("/show")
+	public String showPage() {
+		return "EmpHome"; //ViewName
+	}
+}
+
+4. create folder system for UI pages.
+> Right click on main folder > new > Folder > Enter name (webapp) > Finish
+
+create as:
+src
+ |-main
+    |-webapp
+        |-WEB-INF
+	   |-pages
+
+
+5. Create one JSP Page with name : 'EmpHome' under pages folder.
+> Right click on pages folder > new > other > search with JSP
+> Select 'JSP File' > next > Enter name : EmpHome.jsp
+> Finish
+
+--------EmpHome.jsp------------
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+ <h2>WELCOME TO APP</h2> 
+ <%= new java.util.Date() %>
+ <%
+   response.addHeader("refresh", "5;https://www.google.com/");
+ %>
+</body>
+</html>
+--------------------
+
+6. Provide prefix/suffix and port number inside properties file
+---application.properties---
+server.port=9898
+#Prefix must start and end with / symbol
+spring.mvc.view.prefix=/WEB-INF/pages/
+# UI File Extension 
+spring.mvc.view.suffix=.jsp
+----------------------------
+
+*** Here in prefix , first / symbol indicates Root folder ie webapp folder.
+*** ViewResolver object is created by Spring boot, inputs must be given by
+    Programmer using properties file.
+
+7. Run starter class and Enter URL in address bar
+
+ http://IPAddress:Port/Path
+
+ http://localhost:9898/show
+ http://192.168.0.6:9898/show

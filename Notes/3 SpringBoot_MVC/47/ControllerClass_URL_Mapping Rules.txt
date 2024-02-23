@@ -1,0 +1,312 @@
+				Date : 06/11/2020
+				Spring Boot 7AM
+				   Mr. RAGHU
+			--------------------------------
+	 ---Rules to write Controller class in Spring WEB MVC ----
+
+1) Every Controller#Method must have URL and Method Type(Http Method Type).
+   That is provided using Annotation :
+   @RequestMapping(value="/URL",method=RequestMethod.__)
+
+2) URL is case-sensitive, Path should never be duplicated. 
+--ex--
+@Controller
+ class HomeController {
+    @RequestMapping(value="/register")
+    String showA() {...}
+
+    @RequestMapping(value="/register")
+    String showB() {...}
+ }
+
+Note:
+java.lang.IllegalStateException: Ambiguous mapping. 
+Cannot map 'employeeController' method EmployeeController#showB() to { /reg}
+There is already 'employeeController' bean method
+EmployeeController#showA() mapped.
+
+
+3) Same URL(PATH) can be used at multiple method,
+   but Combination of URL+MethodType must be unique.
+
+ex: //Valid code
+ @Controller
+ class HomeController {
+    @RequestMapping(value="/register",method=RequestMethod.GET)
+    String showA() {...}
+
+    @RequestMapping(value="/register",method=RequestMethod.POST)
+    String showB() {...}
+ }
+
+ //Invaild code
+ @Controller
+ class HomeController {
+    @RequestMapping(value="/register",method=RequestMethod.GET)
+    String showA() {...}
+
+    @RequestMapping(value="/register",method=RequestMethod.GET)
+    String showB() {...}
+ }
+
+--code---------
+a) Controller class
+package in.nareshit.raghu.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@Controller
+public class EmployeeController {
+
+	@RequestMapping(value = "/reg",method = RequestMethod.GET)
+	public String showA() {
+		return "EmpRegister";
+	}
+	
+	@RequestMapping(value = "/reg",method = RequestMethod.POST)
+	public String showB() {
+		return "EmpData";
+	}
+}
+
+b)UI pages
+--EmpRegister.jsp--
+<html>
+<body>
+<H2>WELCOME TO REG(GET TYPE)</H2>
+<form action="reg" method="POST">
+	<input type="submit" value="REGISTE"/>
+</form>
+</body>
+</html>
+
+---EmpData.jsp--
+<html>
+<body>
+<H2>WELCOME TO DATA (/reg + POST)</H2>
+</body>
+</html>
+
+c) Enter URL: http://localhost:9898/reg
+=============================================
+4) If we do not specify any method Type then default is GET type.
+
+ex:
+ @Controller
+ class HomeController {
+    //@RequestMapping(value="/register",method=RequestMethod.GET)
+    @RequestMapping("/register") 
+    String showA() {...}
+ }
+
+5) We can even provide URL at controller class level using @RequestMapping
+  (but not method type).
+  It is recomanded if multiple controller are exist in application.
+--ex--
+package in.nareshit.raghu.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/emp")
+public class EmployeeController {
+
+	@RequestMapping("/register")
+	public String showReg() {
+		return "EmpRegister";
+	}
+	
+}
+
+
+package in.nareshit.raghu.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/admin")
+public class AdminController {
+
+	@RequestMapping("/register")
+	public String showReg() {
+		return "AdminRegister";
+	}
+	
+}
+
+---EmpRegister.jsp--
+<html>
+<body>
+<H2>WELCOME TO EMP REG</H2>
+</body>
+</html>
+---AdminRegister.jsp--
+<html>
+<body>
+<H2>WELCOME TO ADMIN</H2>
+</body>
+</html>
+
+=======================================================================
+6)*** We can use same path at class level and even method level too...
+@Controller
+@RequestMapping("/data")
+class EmployeeController {
+
+  @RequestMapping("/data")
+  String showRegEmp() { .. } 
+}
+Req#--->  http://....../data/data
+
+
+7)** We can even define Controller#method without path, then default is set to '/'
+  *** @RequestMapping must be provided (but no path and no method type)
+--ex--
+@Controller
+class EmployeeController {
+
+  @RequestMapping
+  String showRegEmp() { .. } 
+}
+
+*)Note:
+     @RequestMapping  (equals to)
+     @RequestMapping("/")  (equals to)
+     @RequestMapping(value="/", method=RequestMethod.GET)
+
+8) We can provide multiple paths for one method even..
+
+For Ex:  /home, /login, /logout ---> UserLoginPage
+
+@Controller
+class UserController {
+
+  //@RequestMapping(value={"/home","/login","/logout"})
+  @RequestMapping({"/home","/login","/logout"})
+  String showLogin() { 
+    
+    return "UserLoginPage";
+  } 
+}
+
+---code--------
+package in.nareshit.raghu.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+public class UserController {
+
+	@RequestMapping({"/home","/login","/logout"})
+	public String showLogin() { 
+		return "UserLoginPage";
+	} 
+}
+
+---UserLoginPage.jsp--
+<html>
+<body>
+<H2>WELCOME TO LOGIN/HOME PAGE</H2>
+</body>
+</html>
+
+*) Note:
+ Above all URLs(Paths) comes under one method Type (GET)
+ We can never write @RequestMapping two or more times at one Controller#method
+
+9) We can even provide two method type for one Controller#method.
+--ex--
+@Controller
+class UserController {
+
+  @RequestMapping(value="/home",method={
+       RequestMethod.GET,
+       RequestMethod.POST
+  })
+  String showLogin() { 
+    
+    return "UserLoginPage";
+  } 
+} 
+
+*)Note: If we enter /home with GET (or) /home with POST type
+	then  UserController#showLogin is called.
+
+10) Controller class can have a method without @RequestMapping annotation
+   that behaves like normal method, that can never be executed by FC for 
+   any request.
+
+--ex--
+@Controller
+class UserController {
+  ....(Req methods...)
+
+  void check() { ... } //normal method
+
+}
+
+---code---
+*)Controller
+package in.nareshit.raghu.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+public class UserController {
+
+	@RequestMapping(value="/home")
+	public String showLogin() { 
+		test();
+		return "UserLoginPage";
+	}
+	//can never be called using Request
+	public void test() {
+		System.out.println("FROM TEST");
+	}
+}
+In this case FROM TEST test will show in colsole.
+
+---UserLoginPage.jsp--
+<html>
+<body>
+<H2>WELCOME TO LOGIN/HOME PAGE</H2>
+</body>
+</html>
+
+-----------------------------------------------------------------------
+11) New and Short Annotations.
+
+ GET     : @GetMapping("/path")   | For MVC                                         @RequestMapping(value="/path",method=RequestMethod.GET)
+ POST    : @PostMapping("/path")  | For MVC                                         @RequestMapping(value="/path",method=RequestMethod.POST)
+ PUT     : @PutMapping("/path")   | For RestController(Restful Web services)        @RequestMapping(value="/path",method=RequestMethod.PUT)
+ DELETE  : @DeleteMapping("/path")| For RestController                              @RequestMapping(value="/path",method=RequestMethod.DELETE)
+ PATCH   : @PatchMapping("/path") | For RestController                              @RequestMapping(value="/path",method=RequestMethod.PATCH)
+
+ @GetMapping("/path") ==> @RequestMapping(value="/path",method=RequestMethod.GET)
+
+12) Spring boot, web server default port number is : 8080.
+    HTTP Default port number is : 80
+
+if we set port number as 80 then need not to provide 80 in URL
+ie
+  http://localhost:80/home
+  http://localhost/home
+
+
+13) To define welcome/home page just write controller#method with path '/'
+    and return page name.
+
+@Controller
+public class HomeController  {
+  @RequestMapping("/")
+  public String showHome() {
+    return "Home";
+  }
+}
+-------------------------------------------------------------------------

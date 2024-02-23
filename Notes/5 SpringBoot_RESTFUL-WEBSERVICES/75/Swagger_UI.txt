@@ -1,0 +1,157 @@
+				Date : 12/12/2020
+				Spring Boot 7AM
+				    Mr. RAGHU
+			   -------------------------
+Docker :
+https://www.youtube.com/c/NareshIT/search?query=docker%20raghu
+
+POSTMAN --? 
+Tested --> Manual (POSTMAN, Swagger-UI Easy Manual Testing )
+UnitTest-->
+
+Application ->BackEndApplication ++ UI Tech
+
+I-Party-- Provider - Pivotal Team(Spring and Spring Boot f/w)
+
+III-Vendor--> new concepts 'Spring Fox'
+
+II- Companies/Programmer --Application
+==============================================================================
+API - Application Programming Interface
+
+To perform a specific operation we are writing some code ie called as API.
+writing classes and interface for one concept/operation type.
+
+Database Opration  --   JDBC API
+Collections data   --   Collections API 
+Web Applications   --   Servlet API
+Email Operation    --   Mail API
+
+REST API -- Writing RestControllers for our project modules (classes/interface)
+            that performs one specific operation (or set of operations) is called
+	    as REST API.
+
+Ex: Payment REST API (Payment Operation), Employee REST API (Employee Operation)
+
+------------------------------------------------------------------------------
+Endpoint : Details of REST API which need to make a REST/HTTP call is called as
+           Endpoint details.
+
+Endpoint = URL + Method Type + Input(Header, Body)..etc
+
+--> (No class name, No Method Name)
+
+------------------------------------------------------------------------
+API Document : A document that provide endpoint details and sample request/response
+               format in clear to make testing/Integration with other apps.
+
+  
+--------------------------------------------------------------------------------
+				Swagger UI
+
+Swagger UI provide automated API Documentation even supports testing application.
+Ie it provides all controller and their method details in a UI(Browser)
+we can even execute those methods by passing inputs and check response to...
+
+=> Compare to POSTMAN, here need not to enter Endpoint manually, but input(JSON/Body,
+   Params) need to enter manually.
+
+*) Swagger is not from Spring Boot(Pivotal Team).
+*) Swagger is given by Spring Fox Company, this we need to configure in our application
+*) Swagger is testing tool used for Dev and QA Environments only.
+
+
+Step#1
+<dependency>
+    <groupId>io.springfox</groupId>
+    <artifactId>springfox-swagger2</artifactId>
+    <version>2.9.2</version>
+</dependency>
+
+<dependency>
+    <groupId>io.springfox</groupId>
+    <artifactId>springfox-swagger-ui</artifactId>
+    <version>2.9.2</version>
+</dependency>
+
+
+Step#2 At RestController
+
+@RequestMapping("/products")
+  is modified as
+@RequestMapping("/rest/products")
+
+Step#3 SwaggerConfig class
+package in.nareshit.raghu.config;
+
+import java.util.Collections;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+@Configuration
+@EnableSwagger2
+public class SwaggerConfig {
+	
+	@Bean
+	public Docket createDocket() {
+		return new Docket(DocumentationType.SWAGGER_2) //create Empty UI
+				.select() //select controllers
+				.apis(RequestHandlerSelectors.basePackage("in.nareshit.raghu.rest")) //from this package
+				.paths(PathSelectors.regex("/rest.*")) //having common path
+				
+				.build() // create final UI
+				.apiInfo(apiInfo())
+				;
+	}
+
+	//optional information
+	private ApiInfo apiInfo() {
+		return new ApiInfo(
+				"My NIT App",  //title
+				"Hello",    //description
+				"5.2 GA",  //version
+				"https://nareshit.in/", //Service URL 
+				new Contact(  //contact info
+						"RAGHU", "https://nareshit.in/", 
+						"javabyraghu@gmail.com"), 
+				"NIT LICENCE", // Company Service Name
+				"https://nareshit.in/",  //Company site
+				Collections.emptyList()); // Vendor names
+	}
+	
+}
+
+Step#4
+At RestController class
+  @Api(description = "This is for Products operations")
+
+At RestController methods
+  @ApiOperation("This is to save one Product")
+
+Step#5 Run application and enter URL:
+http://localhost:9898/swagger-ui.html
+
+======================================================
+JUnit 5.x
+https://www.youtube.com/c/NareshIT/search?query=raghu%20junit
+
+Mockito Overview:
+05/12/2020
+https://youtu.be/6hmx--O8PYE
+https://www.youtube.com/watch?v=6hmx--O8PYE&t=990
+
+Spring Boot Unit Testing
+07/12/2020
+https://youtu.be/pFLFKrCknB0
+https://www.youtube.com/watch?v=pFLFKrCknB0&feature=youtu.be
+08/12/2020
+https://www.youtube.com/watch?v=GgWuE-k1_nI&feature=youtu.be

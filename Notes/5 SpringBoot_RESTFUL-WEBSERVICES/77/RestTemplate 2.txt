@@ -1,0 +1,489 @@
+				Date : 15/12/2020
+				Spring Boot 7AM
+				   Mr. RAGHU
+				----------------
+Code Link:
+https://www.mediafire.com/file/9fvsdsxka1o3aw1/SpringBoot_REST_CLIENT_APPs15122020.zip/file
+
+		Spring Boot Rest Consumer: RestTemplate
+
+
+*) If Producer Application returns non-String type, ie Object/Collection Data
+  then that is converted into JSON Format.
+
+*) This JSON data can be stored at consumer as a String type which is valid.
+  (or) JSON can be converted into one Class Object even.
+
+=============================code#1======================================
+-------------Producer -----------
+#1. Create Producer App
+Name : SpringBoot2RestProducer
+Dep : web, lombok
+
+#2. Model class
+package in.nareshit.raghu.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Employee {
+
+	private Integer id;
+	private String name;
+	private Double sal;
+}
+
+#3. RestController
+package in.nareshit.raghu.rest;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import in.nareshit.raghu.model.Employee;
+
+@RestController
+@RequestMapping("/employee")
+public class EmployeeRestController {
+
+	/** This Employee is converted as JSON, that can be
+	   stored in String at consumer **/
+	
+	@GetMapping("/one/{id}")
+	public ResponseEntity<Employee> getOneEmp(
+			@PathVariable Integer id
+			)
+	{
+		return ResponseEntity.ok(new Employee(id,"A",3.3));
+	}
+}
+
+-------------Consumer----------
+#1. Create Consumer App
+Name : SpringBoot2RestConsumer
+Dep : web, lombok
+
+#2. Model class
+package in.nareshit.raghu.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Employee {
+
+	private Integer id;
+	private String name;
+	private Double sal;
+}
+
+
+#3. Consumer Runner
+package in.nareshit.raghu.runner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+@Component
+public class GetJsonDataRunner implements CommandLineRunner {
+	
+	private Logger log = LoggerFactory.getLogger(GetJsonDataRunner.class);
+	
+	@Override
+	public void run(String... args) throws Exception {
+		RestTemplate rt = new RestTemplate();
+
+		String url= "http://localhost:8080/employee/one/{id}";
+		
+		//URL, ResponseType, PathVariabless
+		ResponseEntity<String>  resp = rt.getForEntity(url, String.class, 105);
+		
+		log.info("Status code {}", resp.getStatusCode().name());
+		log.info("Status num {}", resp.getStatusCodeValue());
+		log.info("Response {}", resp.getBody()); //JSON
+		log.info("Content Type {}", resp.getHeaders().getContentType());
+		
+		System.exit(0);
+		
+		
+	}
+
+}
+________________________________________________________________________
+		 	    JACKSON API
+
+ This is called as JSON Converter API.
+ It Means , it supports converting Object data as JSON Format
+ and even JSON data as Object Format.
+
+--API Details--
+*) ObjectMapper is a pre-defined class that contains methods to Convert data.
+*) write__() methods are used to convert Object to JSON Format
+*) read__() methods are used to convert JSON to Object Format
+
+--Test code--
+package in.nareshit.raghu;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import in.nareshit.raghu.model.Employee;
+
+public class TestJackson {
+
+
+	public static void main(String[] args) {
+		//JSON to Object
+
+		try {
+			//1. Create JSON String
+			String json="{\"id\":55,\"name\":\"AA\",\"sal\":33.0}";
+
+			//2. Create ObjectMapper (C) object
+			ObjectMapper om = new ObjectMapper();
+
+			//3. call read__() method
+			Employee emp = om.readValue(json, Employee.class);
+
+			//4. print object
+			System.out.println(emp.toString());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void main1(String[] args) {
+		//Object to JSON
+
+		try {
+			//1. Create Model class Object
+			Employee emp = new Employee(55, "AA", 33.0);
+
+			//2. Create ObjectMapper (C) object
+			ObjectMapper om = new ObjectMapper();
+
+			//3. call write__() method
+			String json = om.writeValueAsString(emp);
+
+			//4. Print JSON
+			System.out.println(json);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
+------Consumer#Runner class#1 Manual Conversion of JSON-------
+package in.nareshit.raghu.runner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import in.nareshit.raghu.model.Employee;
+
+@Component
+public class GetJsonDataRunner implements CommandLineRunner {
+	
+	private Logger log = LoggerFactory.getLogger(GetJsonDataRunner.class);
+	
+	@Override
+	public void run(String... args) throws Exception {
+		RestTemplate rt = new RestTemplate();
+
+		String url= "http://localhost:8080/employee/one/{id}";
+		
+		//URL, ResponseType, PathVariabless
+		ResponseEntity<String>  resp = rt.getForEntity(url, String.class, 105);
+		
+		String json = resp.getBody();
+		
+		try {
+			Employee e = new ObjectMapper().readValue(json, Employee.class);
+			log.info("Object data is {}" , e);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		log.info("Status code {}", resp.getStatusCode().name());
+		log.info("Status num {}", resp.getStatusCodeValue());
+		log.info("Response {}", json ); //JSON
+		log.info("Content Type {}", resp.getHeaders().getContentType());
+		
+		System.exit(0);
+		
+		
+	}
+
+}
+
+**)Note: while making request using getForEntity(__) if we provide
+  response type as non-String type (ex: Employee, Product ..etc)
+  then Response data(XML/JSON) is converted into Object format 
+  using internally ObjectMapper(C) and gives object type as output.
+
+
+------Consumer#Runner class#2 Auto Conversion of JSON-------
+package in.nareshit.raghu.runner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import in.nareshit.raghu.model.Employee;
+
+@Component
+public class GetJsonDataRunner implements CommandLineRunner {
+	
+	private Logger log = LoggerFactory.getLogger(GetJsonDataRunner.class);
+	
+	@Override
+	public void run(String... args) throws Exception {
+		RestTemplate rt = new RestTemplate();
+
+		String url= "http://localhost:8080/employee/one/{id}";
+		
+		//URL, ResponseType, PathVariabless
+		ResponseEntity<Employee>  resp = rt.getForEntity(url, Employee.class, 105);
+		
+		log.info("Status code {}", resp.getStatusCode().name());
+		log.info("Status num {}", resp.getStatusCodeValue());
+		log.info("Response {}", resp.getBody() ); //JSON
+		log.info("Content Type {}", resp.getHeaders().getContentType());
+		
+		System.exit(0);
+		
+		
+	}
+
+}
+============================================================================
+*) Note: If Response JSON internally List<T> given by producer , then
+   we should use T[] (array Type) for JSON to Object conversion.
+   Later we can convert this array data as List Type
+
+
+---Producer code--
+*) RestController
+package in.nareshit.raghu.rest;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import in.nareshit.raghu.model.Employee;
+
+@RestController
+@RequestMapping("/employee")
+public class EmployeeRestController {
+
+	
+
+	@GetMapping("/all")
+	public ResponseEntity<List<Employee>> getAllEmp()
+	{
+		return ResponseEntity.ok(
+				Arrays.asList(
+						new Employee(10,"A",3.3),
+						new Employee(11,"B",4.3),
+						new Employee(12,"C",5.3)
+						)
+				);
+	}
+}
+
+
+---Consumer code-----------
+*) Runner class for HTTP call
+
+package in.nareshit.raghu.runner;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import in.nareshit.raghu.model.Employee;
+
+@Component
+public class GetJsonListDataRunner implements CommandLineRunner {
+	
+	private Logger log = LoggerFactory.getLogger(GetJsonListDataRunner.class);
+	
+	@Override
+	public void run(String... args) throws Exception {
+		RestTemplate rt = new RestTemplate();
+
+		String url= "http://localhost:8080/employee/all";
+		
+		//URL, ResponseType, PathVariabless
+		ResponseEntity<Employee[]>  resp = rt.getForEntity(url, Employee[].class, 105);
+		
+		//read array
+		Employee[]  emps = resp.getBody();
+		
+		//convert to List
+		List<Employee> list  = Arrays.asList(emps);
+		//List<Employee> list  = List.of(emps);
+		
+		log.info("Status code {}", resp.getStatusCode().name());
+		log.info("Status num {}", resp.getStatusCodeValue());
+		log.info("Response {}",  list); //JSON
+		log.info("Content Type {}", resp.getHeaders().getContentType());
+		
+		System.exit(0);
+		
+		
+	}
+
+}
+___________________________________________________________________________
+Task:
+  StudentProducer  
+  StudentConsumer
+
+=========================================================================
+				POST Operation
+
+This time, we should prepare one Request Object(HttpEntity) that holds
+Both Head and Body Section. Head Contains Content-Type : application/json
+and body contains data (object/JSON).
+
+*) if we pass any class object then it is auto-converted into JSON Format
+
+
+--Producer code--
+*) RestController
+package in.nareshit.raghu.rest;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import in.nareshit.raghu.model.Employee;
+
+@RestController
+@RequestMapping("/employee")
+public class EmployeeRestController {
+
+	@PostMapping("/save")
+	public ResponseEntity<String> saveEmployee(
+			@RequestBody Employee employee
+			) 
+	{
+		
+		return ResponseEntity.ok("Employee saved" +employee);
+	}
+	
+}
+
+--Consumer code--
+package in.nareshit.raghu.runner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import in.nareshit.raghu.model.Employee;
+
+@Component
+public class PostDataRunner implements CommandLineRunner {
+
+	private Logger log = LoggerFactory.getLogger(PostDataRunner.class);
+	
+	@Override
+	public void run(String... args) throws Exception {
+		RestTemplate rt = new RestTemplate();
+		
+		String url = "http://localhost:8080/employee/save";
+		
+		//Request Header
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		
+		// Request Body
+		//String body="{\"id\":55,\"name\":\"AA\",\"sal\":330.0}";
+		Employee body = new Employee(9898, "MNOP", 550.0);
+		
+		//prepare request-entity(body+header)
+		//HttpEntity<String> request = new HttpEntity<String>(body,headers);
+		HttpEntity<Employee> request = new HttpEntity<Employee>(body,headers);
+		
+		//URL, RequestEntity, ResponseType
+		ResponseEntity<String> resp = rt.postForEntity(url, request, String.class);
+		
+		//print details
+		log.info("Status code {}", resp.getStatusCode().name());
+		log.info("Status num {}", resp.getStatusCodeValue());
+		log.info("Response {}",  resp.getBody());
+		
+		System.exit(0);
+	}
+
+}
+
+
+**)Note:
+We can send JSON as String directly as request body, in this case no conversion
+is done by Spring boot. If we send Object as request entity then auto-conversion
+is done using Jackson API.
+
+
+Request--> HttpEntity = body + headers
+
+header --> HttpHeaders
+
+body  --> String/ClassType/Collection
+
+
+*) To create one Header Content-Type: application/json, code is:
+  HttpHeaders headers = new HttpHeaders();
+  headers.setContentType(MediaType.APPLICATION_JSON);
+

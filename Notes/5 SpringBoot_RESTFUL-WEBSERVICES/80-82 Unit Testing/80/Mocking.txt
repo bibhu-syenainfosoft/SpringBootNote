@@ -1,0 +1,236 @@
+			 Date : 18/12/2020
+			 Spring Boot 7AM
+			    Mr. RAGHU
+			 -----------------
+Mocking: Creating Stubs(Dummy Objects) which are required for Testing Environment.
+
+*) Test class -A --<>B , B is not implemented yet fully.
+*) Mocking can be done for Interfaces/API classes, Environments, 
+   Database Connections, Http Request, Container Setup..etc.
+
+---API-------
+package : org.mockito
+class   : Mockito
+method  : mock(T.class):T object   [static method]
+
+
+Interface ob = Mockito.mock(Inteface.class);
+
+=> Above statement creates dummy impl class 
+   (proxy class using java reflection api)
+  and also provides dummy logic with default values as return(null,0,0.0..etc)
+  Even finally creates object to that proxy and casted to Same interface Type
+  
+( create class + override methods + provide default return + create object )
+
+
+--Example Interface--
+package in.nareshit.raghu;
+public interface Sample {
+   String printMsg(String msg);
+}
+
+---code---
+Sample sob = Mockito.mock(Sample.class);
+
+
+--Internal code of mock() method---
+public class  $1  implements Sample {
+  public String printMsg(String msg) {
+    if(msg.equals("ABC"){
+      return "HELLO ABC";
+    }
+     return null;
+  }
+}
+
+Sample s = new $1();
+--------------------
+
+======================Full Example=================================
+S#1 Create one Simple Maven Project
+> File > new > other > Search and select maven project > Next
+> Choose checkbox  '[v] Create Simple Maven Project'
+> Enter details
+   GroupId    : in.nareshit.raghu
+   ArtifactId : JUnitAndMockTest
+   Version    : 1.0
+
+> Finish
+
+#2 pom.xml 
+
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+
+<dependencies>
+
+	<!-- JUnit -->
+	<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-engine</artifactId>
+    <version>5.10.0</version>
+    <scope>test</scope>
+        </dependency>
+
+
+	<!-- Mockito -->
+	<dependency>
+    <groupId>org.mockito</groupId>
+    <artifactId>mockito-core</artifactId>
+    <version>5.7.0</version>
+    <scope>test</scope>
+        </dependency>
+
+
+	<!-- JUnit and Mockito -->
+	<dependency>
+    <groupId>org.mockito</groupId>
+    <artifactId>mockito-junit-jupiter</artifactId>
+    <version>5.7.0</version>
+    <scope>test</scope>
+        </dependency>
+
+</dependencies>
+
+S#3 Update Maven Project  (Alt+F5)
+> Right click on ProjectName
+> Maven > Update Project
+> Finish
+
+
+S#4 Define one intreface under src/main/java folder
+
+package in.nareshit.raghu;
+
+public interface Sample {
+
+	String printMsg(String msg);
+}
+
+
+S#5 Write one class under src/test/java
+
+package in.nareshit.raghu;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Iterator;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+public class TestSample {
+	
+	@Test
+	public void testItr() {
+		Iterator<String> itr = mock(Iterator.class);
+		
+		when(itr.next())
+		.thenReturn("A")
+		.thenReturn("B")
+		.thenReturn("C");
+		
+		String actual = itr.next()+" "+itr.next()+" "+itr.next();
+		assertEquals("A B C", actual);
+	}
+	
+	@Test
+	public void testComparable() {
+		Comparable<String> cob = mock(Comparable.class);
+		when(cob.compareTo("NIT")).thenReturn(50);
+		when(cob.compareTo("XYZ")).thenReturn(80);
+		
+		assertEquals(50, cob.compareTo("NIT"));
+		assertEquals(80, cob.compareTo("XYZ"));
+		
+	}
+	
+
+	@Test
+	public void testPrintMsg() {
+		Sample sob = mock(Sample.class);
+		when(sob.printMsg("ABC")).thenReturn("HELLO ABC");
+		
+		assertEquals("HELLO ABC", sob.printMsg("ABC"));
+		
+		//System.out.println(sob.getClass().getName()+"-"+s);
+		//System.out.println(sob.printMsg("ABC"));
+	}
+}
+-----------------------------------------------------------
+@Mock : This annotation findout dependency given and provides proxy setup
+        with default implementation.
+
+=> This annotation must be activated manually, before UnitTest method starts
+   Code: MockitoAnnotations.initMocks(this);
+
+-------------------code-----------------------
+--src/main/java--
+package in.nareshit.raghu;
+public interface OperService {
+	double findGst(double cost, double per);
+}
+
+package in.nareshit.raghu;
+public class CatalogService {
+	private OperService ops;
+	public CatalogService(OperService ops) {
+		this.ops=ops;
+	}
+	public String findCost(double cost) {
+		return "FINAL COST :"+ (cost + ops.findGst(cost, 10));
+	}
+}
+
+----------------------
+--src/test/java--
+package in.nareshit.raghu;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+public class TestCatalogService {
+
+	@Mock
+	private OperService ops;
+	
+	private CatalogService cs;
+	private double cost,per,amt;
+	private String expected, actual;
+	
+	@BeforeEach
+	public void setupData() {
+		MockitoAnnotations.initMocks(this);
+		cs = new CatalogService(ops);
+		cost= 100.0;
+		per = 10.0;
+		amt = 10.0;
+		expected = "FINAL COST :110.0";
+	}
+	
+	@Test
+	public void testFindCost() {
+		when(ops.findGst(cost, per)).thenReturn(amt);
+		actual = cs.findCost(cost);
+		assertEquals(expected, actual);
+	}
+	
+	@AfterEach
+	public void cleanData() {
+		expected = actual = null;
+		cost = per = amt = 0.0;
+	}
+	
+}
+=============================================================================

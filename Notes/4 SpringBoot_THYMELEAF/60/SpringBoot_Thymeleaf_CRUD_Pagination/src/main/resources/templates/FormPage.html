@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/">
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<H3>WELCOME TO EMPLOYEE REGISTER PAGE!!</H3>
+<form th:action="@{/employee/register}" method="POST" th:object="${employee}">
+<pre>
+ID     : <input type="number" th:field="*{eid}"/>
+NAME   : <input type="text"   th:field="*{ename}"/>
+EMAIL  : <input type="text"   th:field="*{email}"/>
+SALARY : <input type="text"   th:field="*{esal}"/>
+DEPT   : <select th:field="*{dept}">
+			<option value="">-SELECT-</option>
+			<option value="DEV">DEV</option>
+			<option value="QA">QA</option>
+			<option value="BA">BA</option>
+		 </select>
+   <input type="submit" value="Add Employee"/>
+</pre>
+</form>
+<p th:text=${msg}></p>
+</body>
+</html>

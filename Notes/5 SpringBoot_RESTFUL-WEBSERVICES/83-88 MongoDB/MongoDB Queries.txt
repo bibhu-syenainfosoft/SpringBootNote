@@ -1,0 +1,1 @@
+>db.book.count() : returns no of rows available in the collection

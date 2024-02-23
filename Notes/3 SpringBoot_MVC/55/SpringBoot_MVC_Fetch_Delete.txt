@@ -1,0 +1,181 @@
+				Date : 17/11/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+				---------------
+Videos For Error and Exception Handling:
+https://www.youtube.com/c/NareshIT/search?query=error%20and%20exception%20raghu
+
+Coding Order
+a. application.properties
+b. Model class
+c. Repository Interface
+d. Service (Interface-Impl)
+e. Controller
+f. UI Pages
+
+-------------------------------------------------------------------------------
+		Operation#2  Display All rows at UI
+-------------------------------------------------------------------------------
+ Fetch all rows from DB table using findAll():List<T> Method, send this data to
+ UI from Controller using Model memory. At UI Display this data as HTML table 
+ using JSTL + EL concept.
+
+pom.xml
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>jstl</artifactId>
+</dependency>
+
+
+d. Service (Interface-Impl)
+
+=> IEmployeeService.java
+  List<Employee> getAllEmployees();
+
+=> EmployeeServiceImpl.java
+  public List<Employee> getAllEmployees() {
+      return repo.findAll();
+  }
+
+e. Controller
+
+=> EmployeeController.java
+
+	@GetMapping("/all")
+	public String showAllEmps(Model model) {
+		//call service to fetch data
+		List<Employee> list = service.getAllEmployees();
+		//send to UI
+		model.addAttribute("list", list);
+		
+		return "EmpData";
+	}
+
+f. UI Pages
+
+------EmpData.jsp-------
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h3>WELCOME TO EMPLOYEE DATA PAGE!!</h3>
+<table border="1">
+	<tr>
+		<th>ID</th>
+		<th>NAME</th>
+		<th>MAIL</th>
+		<th>SALARY</th>
+		<th>DEPT</th>
+		<th>HRA</th>
+		<th>DA</th>
+	</tr>
+	<c:forEach items="${list}" var="ob">
+		<tr>
+			<td>${ob.eid}</td>
+			<td>${ob.ename}</td>
+			<td>${ob.email}</td>
+			<td>${ob.esal}</td>
+			<td>${ob.dept}</td>
+			<td>${ob.hra}</td>
+			<td>${ob.da}</td>
+		</tr>
+	</c:forEach>
+</table>
+</body>
+</html>
+
+-------------------------------------------------------------------------------
+		Operation#3  Remove Data based on ID (DELETE)
+-------------------------------------------------------------------------------
+URL-Rewriting:-
+  Creating URL (Path) using combination of static path and dynamic path.
+
+Ex: <a href="delete?eid=${ob.eid}">DELETE</a>
+static path : delete?eid=
+dynamic path: ${ob.eid}
+
+d. Service (Interface-Impl)
+-- IEmployeeService.java--
+  void deleteEmployee(Integer id);
+
+--EmployeeServiceImpl.java--
+ public void deleteEmployee(Integer id) {
+	repo.deleteById(id);
+ }
+---------------------------
+
+e. Controller
+
+	@GetMapping("/delete")
+	public String removeEmp(
+			@RequestParam Integer eid,
+			Model model
+			) 
+	{
+		//delete data based on Id
+		service.deleteEmployee(eid);
+		
+		/*
+		model.addAttribute("message", "Employee '"+eid+"' Deleted");
+		//fetch latest data and display at UI
+		List<Employee> list = service.getAllEmployees();
+		model.addAttribute("list", list);
+		return "EmpData"; 
+                */
+		return "redirect:all";
+	}
+
+f. UI Pages
+
+--EmpData.jsp--
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h3>WELCOME TO EMPLOYEE DATA PAGE!!</h3>
+<table border="1">
+	<tr>
+		<th>    ID     </th>
+		<th>    NAME   </th>
+		<th>    MAIL   </th>
+		<th>    SALARY </th>
+		<th>    DEPT   </th>
+		<th>    HRA    </th>
+		<th>    DA     </th>
+		<th>    LINK   </th>	
+	</tr>
+	<c:forEach items="${list}" var="ob">
+		<tr>
+		        <td>${ob.eid}</td>
+			<td>${ob.ename}</td>
+			<td>${ob.email}</td>
+			<td>${ob.esal}</td>
+			<td>${ob.dept}</td>
+			<td>${ob.hra}</td>
+			<td>${ob.da}</td>
+			<td>
+				<a href="delete?eid=${ob.eid}">DELETE</a>
+			</td>
+		</tr>
+	</c:forEach>
+</table>
+${message}
+</body>
+</html>
+-------------------------------------------------------------------------------

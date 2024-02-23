@@ -1,0 +1,142 @@
+				Date : 28/11/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+				----------------
+Spring Boot REST Simple Application:-
+
+GET : Fetch Resource from Server            [Database -- SELECT ]
+
+POST : Create Resource at server            [Database-- INSERT ]
+
+PUT  : Modify Existed Resource at server    [Database-- UPDATE ]
+ 
+DELETE : Remove Resource at server          [Database-- DELETE ]
+
+
+*) @Controller returns ViewName and Model, that communicates with ViewResolver next.
+   Here, @RestController returns Response (ResponseEntity) in Global Format, no view
+   and supports integration with any Client any UI Technology.
+
+*) @Controller supports any Java UI Technology, where @RestController supports any
+   (Java and non-Java) UI Technology.
+
+----------Client Tool---------------------------------
+a. POSTMAN(It is supported by any tool like Java,Python,.Net), AdvRestClient, Insomnia..etc
+b. SWAGGER(It is specific to SpringBoot)
+
+*) POSTMAN is a HTTP Client tool, used to test applications by making HTTP Request.
+  It supports almost every Type of Request constrction and for any language application.
+
+=> We can download as Chrome Extension or https://www.postman.com/downloads/
+
+------------------------------------------------------------------------------
+S#1 Create one Spring Starter Project
+Name : SpringBoot2RestFirstApp
+Dep  : Spring web
+
+
+S#2 RestController class
+
+package in.nareshit.raghu.rest;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/product")
+public class ProductRestController {
+	
+	@GetMapping("/all")
+	public ResponseEntity<String> getAllProducts() {
+		ResponseEntity<String> resp = 
+				new ResponseEntity<String>("FROM ALL ", HttpStatus.OK);//200-OK
+		
+		return resp;
+	}
+	
+	@PostMapping("/save")
+	public ResponseEntity<String> saveProduct(){
+		ResponseEntity<String> resp = 
+				new ResponseEntity<String>("FROM SAVE", HttpStatus.CREATED);//201-CREATED
+		
+		return resp;
+	}
+	
+	//@RequestMapping(value = "/update",method = RequestMethod.PUT)
+	@PutMapping("/update")
+	public ResponseEntity<String> modifyProduct() {
+		ResponseEntity<String> resp = 
+		//		new ResponseEntity<String>("FROM UPDATE ", HttpStatus.RESET_CONTENT);//205-RESET_CONTENT
+				new ResponseEntity<String>("FROM UPDATE ", HttpStatus.OK);//200-OK
+		
+		return resp;
+	}
+	
+	@DeleteMapping("/remove")
+	public ResponseEntity<String> removeData() {
+		ResponseEntity<String> resp = 
+				new ResponseEntity<String>("REMOVED",HttpStatus.OK);
+		
+		return resp;
+	}
+	
+	
+}
+
+  ---POSTMAN SCREEN#1------------------------------
+   GET    http://localhost:8080/product/all   SEND
+  -------------------------------------------------
+
+
+  ---POSTMAN SCREEN#2------------------------------
+   POST    http://localhost:8080/product/save  SEND
+  -------------------------------------------------
+
+  ---POSTMAN SCREEN#3------------------------------
+   PUT   http://localhost:8080/product/update  SEND
+  -------------------------------------------------
+
+  ---POSTMAN SCREEN#4------------------------------
+   DELETE http://localhost:8080/product/remove SEND
+  -------------------------------------------------
+
+=================================================================================
+                     MediaType (JSON/XML) Annotations
+		    @RequestBody   and    @ResponseBody
+
+*) @RequestBody : It reads Global Data (either XML/JSON) from Http Request Body 
+		  Section and converts into Object format, finally given as
+		  method parameter. We can also call it as INPUT.
+
+
+*) @ResponseBody : It takes method return type (Object) and converts it into
+                   Global Format(either XML/JSON). This data is given to Http Response
+	           Body Section. We can also call it as OUTPUT.
+
+
+Q) What is the difference between @ModelAttribute and @RequestBody?
+A) @ModelAttribute: Converts HTML FORM Data into Object and reads in Controller.
+   @RequestBody:    Converts Global Data into Object and Reads in RestController.
+
+
+*)Note: We need not to apply @ResponseBody in RestController code, that is always
+    applied. When we write @RestController, that internally adds @ResponseBody even.
+
+    @RestController = Object cration + @Controller (HTTP Support) + Global Format
+                      + @ResponseBody + (No ViewResolver)..
+
+=> @RequestBody must be added manually when ever it is needed.
+
+
+=> Content-Type is a Header Param, that indicates 
+   what data type exist in Requst/Response Body.
+   In case of String : text/plain
+   For JSON : application/json, 
+   For XML : application/xml
+  

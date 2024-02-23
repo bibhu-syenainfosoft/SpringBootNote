@@ -1,0 +1,130 @@
+				Date : 25/11/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+			---------------------------------
+Spring Boot AOP: https://www.youtube.com/watch?v=x2f4NzNCkCI
+
+
+			AJAX = Asynchronous JavaScript And XML
+		-----------------------------------------------------------------
+
+*) Synchronous Communication:- Every web application default communication type is
+   synchronous. ie client can make request to server after receving last response only.
+   ie request-response are executed in order/sequence.
+
+*) Asynchronous Communication: Client need not to wait to make next request for last
+   response. But, all request-response are executed properly.[But not in order].
+
+=> Asynchronous Communication is implemented in our web application using AJAX concept.
+   If application is made into multiple components (<div>/<span> sections).
+   ie multiple components from Single webpage make multiple request to server
+   independently, those are processed by server and gives response back to same component.
+
+Ex: Shopping websites, Cricket Score Web sites, Stock market sites..etc.
+
+*) AJAX using JQuery:-
+<script src="https://code.jquery.com/jquery-3.5.1.min.js" ></script>
+
+SELECT COUNT(*) FROM EMPTAB WHERE EMAIL=?
+
+IF COUNT==0 , EMAIL ID NOT EXIST 
+ELSE        , EMAIL ID EXIST.
+
+
+Expression#1
+ a>b?true:false
+
+Expression#2
+ a>b
+
+=> Both exp#1 and Exp#2 are same.
+
+============Code Modifications============================================
+1. EmployeeRepository
+
+   @Query("SELECT COUNT(email) FROM Employee WHERE email=:email")
+   public Integer getEmailCount(String email);
+
+2. IEmployeeService
+   boolean isEmployeeExistByEmail(String email);
+
+3. EmployeeServiceImpl
+
+  public boolean isEmployeeExistByEmail(String email) {
+	return repo.getEmailCount(email)>0;
+  } 
+
+4. AJAX code at UI
+
+$.ajax({
+  url,
+  data,
+  success:function
+})
+
+---EmployeeReg.html---
+Add under head section:
+<script src="https://code.jquery.com/jquery-3.5.1.min.js" ></script>
+
+Add span to show error
+EMAIL : <input type="text" th:field="*{email}" /> <span id="emailError"></span>
+
+Validate Email using AJAX call:
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$("#email").change(function(){
+		$.ajax({
+			url : 'checkEmail',
+			data: {'email':$("#email").val()},
+			success:function(resTxt) {
+				$("#emailError").text(resTxt);
+			}
+		});
+	});
+});
+</script>
+
+
+5. Controller code 
+	@GetMapping("/checkEmail")
+	public @ResponseBody String validateEmail(@RequestParam String email)
+	{
+		String message = "";
+		if(service.isEmployeeExistByEmail(email)) {
+			message = email+" Already exist";
+		}
+		return message;
+	}
+
+
+*) Note:
+a) @ResponseBody indicates return type is not a page name (not a view name),
+   it indicates return type is data/message that should be given back to
+   same page from where request is made without reloading entire page.
+
+b) If we are using AJAX at UI then from our controller we should return
+   response data, not a UI page name. So, method return type in controller
+   must have @ResponseBody.
+========================================================================
+URL   : checkEmail
+DATA  : email
+
+/check?email=___
+
+$("#email").val() => Reading data from text input 
+
+success:function => once response is given back to AJAX from Controller
+                    then what logic should be executed.
+
+Syntax:-
+$.ajax({
+ url : '-----',
+ data: {key:val},
+ success:function(abc) {
+    //logic
+ }
+
+});
+
+*) JQuery + Angular/ReactJS

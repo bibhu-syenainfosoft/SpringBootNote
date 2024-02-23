@@ -1,0 +1,382 @@
+			    Date : 07-10-2022
+                       Spring Boot and Microservices
+		               Mr. RAGHU
+			       (ASHOK IT)
+	----------------------------------------------------
+Custom Query methods:-
+1. findBy : It is one abstract method, need to define in Repository Intrerface.
+            That is one SELECT Query generated at runtime.
+
+2. @Query("JPQL/HQL") : We need to define one Query manually.
+		        JPQL/HQL Query is converted into SQL by dialect.
+
+=> @Query supports Both SELECT and NON-SELECT operations.
+
+----------SQL-----------
+*) It is created using table and column names
+*) Case insensitive.
+
+---------JPQL/HQL-------
+Table Name = ClassName
+column Name = variableName
+*) Partially case-sensitive ( Java words - case-sensitive class,variable)
+   (SQL words case-insensitive -- SELECT, WHERE, FROM...etc)
+
+-------------------Examples--------------------------
+1.
+SQL: SELECT * FROM EMPTAB
+
+JPQL/HQL:
+   SELECT e1 FROM com.app.entity.Employee e1  //valid
+   SELECT e1 FROM Employee e1  //valid
+   From Student //valid
+   FROM com.app.entity.Employee e1  //valid (SELECT ALL COLUMNS)
+
+   SELECT * FROM Employee // invalid (* not allowed as all columns)
+
+2.
+sql: SELECT EID,ENAME FROM EMPTAB;
+JPQL/HQL: SELECT empId, empName FROM Employee;
+
+3.
+sql: select ename from emptab;
+jqpl/hql: select empName from Employee;
+===============================================================
+Q) Why cant we apply @Component or equal stereotype for Entity class?
+A) This is not Spring Bean. It is related to Database Table.
+   One Row is converted into one Entity class Object.
+   It is Related to JPA/Hibernate.
+
+Q) What are possible returnTypes in JPQL/HQL Custom queries?
+A) List For multiple rows
+   Optional for Single Row.
+
+ SQL: select * from emptab where eid=?
+       1 row , all columns
+       Optional<T>
+
+=================code==================================
+1. Entity
+package com.app.raghu.entity;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name="emptab")
+public class Employee {
+	@Id
+	@Column(name="eid")
+	private Integer empId;
+	
+	@Column(name="ename")
+	private String empName;
+	
+	@Column(name="esal")
+	private Double empSal;
+	
+	@Column(name="edept")
+	private String empDept;
+	
+}
+
+2. Repository
+package com.app.raghu.repo;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import com.app.raghu.entity.Employee;
+
+public interface EmployeeRepository extends JpaRepository<Employee, Integer>{
+	//@Query("_________")
+	//ReturnType  abstractMethodName(<Param>)
+	/**
+	 * This abstractMethodName can be any name...
+	 * 
+	 */
+
+	//SQL: 1. fetch one column data
+	@Query("SELECT e.empName FROM Employee e")
+	//@Query("SELECT empName FROM Employee")
+	List<String> getAllEmpNames();
+	
+	//SQL: 2 select all columns
+	@Query("SELECT e FROM Employee e")
+	//@Query("FROM Employee e")
+	List<Employee> fetchAllEmps();
+	
+	//SQL: 3 select multiple columns
+	@Query("SELECT e.empId, e.empName FROM Employee e")
+	List<Object[]> fetchIdAndNames();
+	
+	//SQL:4 Fetch one column and one row data
+	@Query("SELECT e.empName FROM Employee e WHERE e.empId=:id")
+	Optional<String> getEmpNameById(Integer id);
+	
+	//SQL:5 fetch all columns and one row
+	@Query("SELECT e FROM Employee e WHERE e.empId=:id")
+	Optional<Employee> fetchEmployeeById(Integer id);
+	
+	
+	
+}
+
+3. Runner class
+package com.app.raghu.runner;
+
+import java.util.Arrays;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import com.app.raghu.entity.Employee;
+import com.app.raghu.repo.EmployeeRepository;
+
+@Component
+public class TestEmployeeASaveRunner implements CommandLineRunner {
+
+	@Autowired
+	private EmployeeRepository repo;
+	
+	public void run(String... args) throws Exception {
+		repo.saveAll(
+				Arrays.asList(
+						 new Employee(101, "AA", 200.0, "DEV"),
+						 new Employee(102, "BA", 500.0, "DEV"),
+						 new Employee(103, "AC", 200.0, "QA"),
+						 new Employee(104, "DD", 400.0, "QA"),
+						 new Employee(105, "EF", 600.0, "DEV")
+						)
+				);
+		
+		
+		//repo.getAllEmpNames().forEach(System.out::println);
+		//repo.fetchAllEmps().forEach(System.out::println);
+		
+		repo.fetchIdAndNames() //returns Object[]
+		.stream()
+		.map(obj -> obj[0] + " : " + obj[1])
+		.forEach(System.out::println);
+		
+		Optional<String> opt =  repo.getEmpNameById(101);
+		if(opt.isPresent()) {
+			System.out.println(opt.get());
+		} else {
+			System.out.println("NO Data");
+		}
+		
+		Employee e =  repo.fetchEmployeeById(1040)
+				.orElseThrow(()-> new RuntimeException("Not Found"));
+		System.out.println(e);
+		
+	}
+
+}
+
+4. YAML File
+spring:
+  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/boot7am
+    username: root
+    password: root
+    
+  jpa:
+    show-sql: true
+#    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: create
+================================================================
+Note: 
+-> HQL does not provide * for selecting all the rows.
+-> To convert the word to lowercase: select word/line->ctrl+shift+y
+-> To convert the word to uppercase: select word/line->ctrl+shift+x
+-> To write native/SQL query using @Query provide one attribute naiveQuery=true
+
+Ex: 
+	@Query(nativeQuery = true,value = "SELECT * FROM EMPLOYEE")
+	List<Employee> fetchDatabySql();
+-> Positional parameters reads data from method params in order but names parameter reads data from method param names, no need of order
+   (param name and variable name matching)
+
+=================================================================
+				Date : 08-10-2022
+			 Spring Boot and Microservices
+			          Mr. RAGHU
+				  (ASHOK IT)
+	------------------------------------------------------------
+Github:
+https://www.youtube.com/watch?v=qLrx6wkM5Ig
+
+*)Note:
+If we use Optional as ReturnType and query may return Multiple rows
+output then NonUniqueResultException: query did not return a unique result: 5
+may be raised.
+
+=> List can store any output (1 row or multiple rows).
+=> Optional can store single object(1 row data).
+========================================================================
+Parameters:- Input given to Query at runtime.
+
+1. Positional Parameters (?1,?2..etc)
+ This is given by JPA and used to indicate inputs to Query in order.
+
+2. Named Parameters (:abc, :empId, :myIds, :names ..etc)
+ it is a better way of passing or identify parameters (based on names)
+
+-> Either use @Param or make method param name same as query param name
+  Syntax=>  :name
+
+=> Finally converted to SQL Parameters (? ? ? ? style).
+
+=> no.of parameters present in Query and no.of parameters present in
+   method param must be same(same count). 
+   Else IllegalArgumentException: At least 3 parameter(s) provided 
+   but only 2 parameter(s) present in query.
+
+@Query("SELECT b FROM Book b WHERE b.author like ?1 OR b.bookCost > ?2 OR b.bookType=?3")
+List<Book> getBooksAuthorCost(String author, Double bookCost);
+
+--In MySQL : Result is same-------
+ select * from booktab where bauth like 'r%';
+ select * from booktab where bauth like 'R%';
+-------------------------------------------------------
+Q) Do we need to provide @Repository on Data JPA Repository interface?
+A) Not Required.
+1. In Spring, we need to define interface and implementation class for
+   Repository. On Impl class we need to define @Repository.
+
+2. Here, in Data JPA Dynamic Proxy (Impl class + object)
+   is given by Spring Boot. So directly you use it where you want
+   (@Autowired).
+
+=====Code===================================================
+1. Entity
+package com.app.raghu.entity;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name="booktab")
+public class Book {
+	@Id
+	@Column(name="bid")
+	private Integer bookId;
+	
+	@Column(name="bname")
+	private String bookName;
+
+	@Column(name="bauth")
+	private String author;
+	
+	@Column(name="bcost")
+	private Double bookCost;
+	
+	@Column(name="btype")
+	private String bookType;
+	
+}
+
+2. Runner class
+package com.app.raghu.runner;
+
+import java.util.Arrays;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import com.app.raghu.entity.Book;
+import com.app.raghu.repo.BookRepository;
+
+@Component
+public class TestDataRunner implements CommandLineRunner {
+	@Autowired
+	private BookRepository repo;
+	
+	public void run(String... args) throws Exception {
+		repo.saveAll(
+				Arrays.asList(
+						new Book(101, "SBMS", "RAGHU", 300.0, "Backend"),
+						new Book(102, "CORE", "RAGHU", 200.0, "Backend"),
+						new Book(103, "ADV", "ASHOK", 400.0, "Backend"),
+						new Book(104, "REACT", null, 500.0, "Frontend"),
+						new Book(105, "HTML", "RAGHU", 600.0, "Frontend"),
+						new Book(106, "CSS", null, 300.0, "Frontend"),
+						new Book(107, "ANGULAR", "ASHOK", 800.0, "Frontend"),
+						new Book(108, "SQL", "RAGHU", 200.0, "Database")
+						)
+				);
+		
+		repo.getBooksByAuthor("RAGHU").forEach(System.out::println);
+		//repo.getBooksAuthorCost("r%", 200.0).forEach(System.out::println);
+		//repo.getBooksIds(Arrays.asList(101,106,108,111,134)).forEach(System.out::println);
+		
+		
+	}
+
+}
+
+3. Repository class
+package com.app.raghu.repo;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.app.raghu.entity.Book;
+
+@Repository
+public interface BookRepository extends JpaRepository<Book, Integer> {
+
+	//SQL: select * from booktab where author=?
+	//@Query("SELECT b FROM Book b WHERE b.author=?1")
+	@Query("SELECT b FROM Book b WHERE b.author = :abc")
+	List<Book> getBooksByAuthor(@Param("abc")String author);
+	
+	//SQL: select * from booktab where author like ? or bcost > ?
+	@Query("SELECT b FROM Book b WHERE b.author like ?1 OR b.bookCost > ?2 OR b.bookType=?3")
+	//@Query("SELECT b FROM Book b WHERE b.bookCost > :bookCost OR b.author like :author")
+	List<Book> getBooksAuthorCost(String author, Double bookCost);
+	
+	//SQL: select * from booktab where bid in (?,?,?)
+	//@Query("SELECT b FROM Book b WHERE b.bookId in (?1)")
+	@Query("SELECT b FROM Book b WHERE b.bookId in (:inputs)")
+	List<Book> getBooksIds(List<Integer> inputs);
+	
+}
+
+
+
+
+
+
+

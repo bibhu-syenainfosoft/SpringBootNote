@@ -1,0 +1,233 @@
+ 			     Date : 17/12/2020
+			     Spring Boot 7AM
+			        Mr. RAGHU
+			------------------------------
+
+code:
+https://www.mediafire.com/file/dckcefbwxx03dmq/SpringBootRestTemplate_17122020_RAGHU.zip/file
+
+			
+			Working with RestTemplate
+
+*)Working with Delete:
+
+a) RestTemplate has provided method delete(URL,variables):void
+   This method will never return ResponseEntity. It returns void type.
+
+=> Use above method in case -'Only make request, do not need response'.
+
+---code-------------
+*)Provider RestController
+
+package in.nareshit.raghu.rest;
+//ctrl+shift+O
+@RestController
+@RequestMapping("/employee")
+public class EmployeeRestController {
+
+	
+	@DeleteMapping("/remove/{id}")
+	public ResponseEntity<String> deleteEmployee(
+			@PathVariable Integer id) 
+	{
+		System.out.println("DELETE IS CALLED");
+		return ResponseEntity.ok("Employee Deleted => " +id);
+	}
+	
+}
+
+*) Consumer Runner
+package in.nareshit.raghu.runner;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+@Component
+public class DeleteRunner implements CommandLineRunner {
+
+	public void run(String... args) throws Exception {
+		//1. Rest Template object
+		RestTemplate rt = new RestTemplate();
+		
+		//2. URL 
+		String url="http://localhost:8080/employee/remove/{id}";
+		
+		//3. make Req call and get Response
+		rt.delete(url, 50); //void
+		
+		//4. print response
+		System.out.println("DONE");
+
+		//5. stop server
+		System.exit(0);
+		
+	}
+
+}
+-----------------------------------------------------------------
+			exchange(___) in RestTemplate
+
+This method is used to make request for any type of Http Method with all
+possibles and returns Even ResponseEntity<T>
+
+
+ exchange(
+    URL,
+    HttpMethod,
+    HttpEntity(reqEntity),
+    ResponseType,
+    pathVariables...) : ResponseEntity<T>
+
+
+
+--calling DELETE---
+package in.nareshit.raghu.runner;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+@Component
+public class DeleteRunner implements CommandLineRunner {
+
+	public void run(String... args) throws Exception {
+		//1. Rest Template object
+		RestTemplate rt = new RestTemplate();
+		
+		//2. URL 
+		String url="http://localhost:8080/employee/remove/{id}/{name}";
+		
+		//3. make Req call and get Response
+		// rt.delete(url, 50); //void
+		// URL, HttpMethod, Request, ResponseType, pathVariables
+		ResponseEntity<String> resp = rt.exchange(url, HttpMethod.DELETE, null, String.class, 5858,"SAM");
+		
+		//4. print response
+		System.out.println("Status code - " + resp.getStatusCode().name());
+		System.out.println("Status num - " + resp.getStatusCodeValue());
+		System.out.println("Response - " + resp.getBody());
+
+		//5. stop server
+		System.exit(0);
+		
+	}
+
+}
+
+--calling POST using Exchange----
+package in.nareshit.raghu.runner;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+@Component
+public class PostUsingExchangeRunner implements CommandLineRunner {
+
+	public void run(String... args) throws Exception {
+		RestTemplate rt = new RestTemplate();
+		
+		String url="http://localhost:8080/employee/save";
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		
+		String body = "{\"id\":55,\"name\":\"A\",\"sal\":650.0}";
+		
+		HttpEntity<String> requestEntity =  new HttpEntity<String>(body, headers);
+		
+		ResponseEntity<String> resp = rt.exchange(url, HttpMethod.POST, requestEntity, String.class);
+		
+		System.out.println("Status code - " + resp.getStatusCode().name());
+		System.out.println("Status num - " + resp.getStatusCodeValue());
+		System.out.println("Response - " + resp.getBody());
+
+		System.exit(0);
+		
+		
+	}
+
+}
+
+=========================Code for Update================================
+*) RestController
+package in.nareshit.raghu.rest;
+//ctrl+shift+O
+@RestController
+@RequestMapping("/employee")
+public class EmployeeRestController {
+
+	@PutMapping("/modify/{id}")
+	public ResponseEntity<String> modifyEmployee(
+			@PathVariable Integer id,
+			@RequestBody Employee employee
+			)
+	{
+		return ResponseEntity.ok("Employee Updated => " +id +","+employee);
+	}
+	
+	
+}
+
+*)Consumer Runner:
+package in.nareshit.raghu.runner;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+@Component
+public class UpdateRunner implements CommandLineRunner {
+
+	public void run(String... args) throws Exception {
+		
+		RestTemplate rt = new RestTemplate();
+		
+		String url="http://localhost:8080/employee/modify/{id}";
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		
+		String body="{\"name\":\"SAM\",\"sal\":500.0}";
+		
+		HttpEntity<String> requestEntity = new HttpEntity<>(body, headers);
+		
+		//URL, reqMethod, reqEntity, ResponseType, pathVariables
+		ResponseEntity<String> resp = rt.exchange(url, HttpMethod.PUT, requestEntity, String.class, 500);
+		
+		
+		System.out.println("Status code - " + resp.getStatusCode().name());
+		System.out.println("Status num - " + resp.getStatusCodeValue());
+		System.out.println("Response - " + resp.getBody());
+
+		System.exit(0);
+		
+	}
+
+}
+
+
+
+----------------------------------------------------------------
+Q) What is Difference between @RestController and @Controller ?
+A) 
+  
+  @Controller = WEB MVC + UI(Language-JSP/Thymleaf) + ViewResolver
+   (No integration with other apps, no dynamic Ui technologies)
+
+ @RestController = No UI + REST API + Integrate with any UI + (JSON/XML).
+ 
+=========================================================================  

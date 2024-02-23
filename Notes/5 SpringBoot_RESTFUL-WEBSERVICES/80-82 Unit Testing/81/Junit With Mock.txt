@@ -1,0 +1,132 @@
+				Date : 19/12/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+				----------------
+JUnit 5.x
+https://www.youtube.com/c/NareshIT/search?query=raghu%20junit
+
+Mockito Overview:
+https://youtu.be/6hmx--O8PYE
+https://www.youtube.com/watch?v=6hmx--O8PYE&t=990
+----------------------------------------------
+Spring Boot Unit Testing
+#1
+https://youtu.be/pFLFKrCknB0
+https://www.youtube.com/watch?v=pFLFKrCknB0&feature=youtu.be
+#2
+https://www.youtube.com/watch?v=GgWuE-k1_nI&feature=youtu.be
+
+
+			Spring Boot REST - JUnit with Mock
+
+*) In case of Spring Boot, Full Environment is Mocked.
+
+=> This time we will not starter class, we run our JUnit Testcase(class).
+
+=> Now, in this case, we need to create (one time setup)
+ a) create Dummy Spring container with basic setup 
+    (Component Scan, PropertySource..etc) as a WebServer setup.
+
+  @SpringBootTest(webEnvironment= WebEnvironment.MOCK)
+
+ b) Activate AutoConfiguration for MVC application setup.
+  (DataSource, FC, HandlerMapping, ViewResolver..)
+
+  @AutoConfigureMockMvc
+
+ c) Load Properties file for Test Environment (if any specific file).
+
+ @TestPropertySource
+
+ d) Access/Refer(Autowire)Mocked MVC Environment for Operation.
+   [***FC : TestDispatcherServlet object created]
+
+ @Autowired
+ private MockMvc mockMvc; //reference to Spring Container + MVC Setup
+
+
+=> ****Now, for every operation (GET/POST/PUT/DELETE)
+
+ 1) Create one Dummy Request(HttpServletRequest)
+
+ 2) Execute Request (using Mocked MVC Environment) and Get Result
+
+ 3) Read Response (HttpServletResponse) given by Mocked MVC Environment.
+
+ 4) Validate/Assert Actual data with Expected data.
+   (must check status, Response Body, Content-Type..etc)
+
+Note: for multiple condition checking fail() method is used for single condition.
+
+-------------------------------------------------------------------------
+**** Here Dummy Request means, A request not made by actual application User.
+     It is made for testing our application.
+-----------------------------------------------------------------------
+			spring-boot-starter-test
+
+*) Spring Boot Starter Test given by Parent Project that provide test env.
+*) Spring Boot Version 2.4.x(current) supports only JUnit 5 + Mockito 3
+*) Spring Boot Previous version 2.3.x (or older) was able to support
+   JUnit Jupiter API (JUnit 5) and Vintage Engine Support (JUnit 4, JUnit 3).
+*) Need not to mock any Type Manually, Auto Injecting of objects provided.
+ (ex: Repo->object created -> linked to Service. Service obj created-> link to
+    RestController,..etc).
+
+spring-boot-starter-test = Spring Test Environment + Spring Container Setup 
+            + Spring MVC Setup + AutoConfiguration + JUnit 5 + Mockito 3 Setup
+
+--------------------------------code-----------------------------------------
+package in.nareshit.raghu.test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+@SpringBootTest(webEnvironment = WebEnvironment.MOCK)
+@AutoConfigureMockMvc
+@TestPropertySource("classpath:application-test.properties")
+public class TestProductRestController {
+
+	@Autowired
+	private MockMvc mockMvc; 
+	
+	@Test
+	public void testSaveProduct() throws Exception {
+		//1. Create Dummy Http Request
+		MockHttpServletRequestBuilder request =
+		MockMvcRequestBuilders
+		.post("/rest/products/save")
+		.contentType(MediaType.APPLICATION_JSON)
+		.content("{\"prodCode\":\"ABC\", \"prodCost\":3.3}")
+		;
+		
+		//2. Execute Request and Get Result
+		MvcResult result = mockMvc.perform(request).andReturn();
+		
+		//3. Read response object from result
+		MockHttpServletResponse response = result.getResponse();
+		
+		//4. validate/assert details
+		//expected Status, actual Status
+		assertEquals(HttpStatus.CREATED.value(), response.getStatus());
+		//if it is not saved.
+		if(!response.getContentAsString().contains("saved")) {
+			fail();
+		}
+		
+	}
+	
+}

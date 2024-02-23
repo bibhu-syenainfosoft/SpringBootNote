@@ -1,0 +1,6 @@
+Note:
+ => If we want to make connect with multiple databases then first we have to create Datasource object, then EntityManagerFactory, then TransactionManager then we have     to link them together then all these should be linked with JPA Repository.
+ => Also we can link it to multiple JPA Repository. 
+
+Youtube Video Link:
+https://www.youtube.com/watch?v=nzszxQbQ5WU

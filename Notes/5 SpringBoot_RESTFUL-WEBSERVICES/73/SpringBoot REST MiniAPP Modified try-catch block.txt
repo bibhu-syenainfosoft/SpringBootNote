@@ -1,0 +1,215 @@
+				Date : 10/12/2020
+				Spring Boot 7AM
+				   Mr. RAGHU
+				-------------------
+Spring BOOT REST Workspace:
+http://www.mediafire.com/file/sn70l0zlnjfg7f2/SpringBootREST_10122020_RAGHU_7AM.zip/file
+
+			   Spring Boot : REST Mini Project
+
+=> Try-Catch Block Coding
+=> Logging (SLF4J-LOG4J)
+=> Swagger UI
+=> Unit Testing Application
+
+
+*)Note:
+a) HttpStatus - OK(200) it indicates request processed succssefully and response given back.
+
+b) HttpStatus - CREATED(201) it indicates request processed succssefully new resource is created at application (new File/new row at DB)
+
+c) HttpStatus - (INTERNAL SERVER ERROR) 500 if any unknow problem(Exception which is not handled using our handler) then we should indicate status code 500.
+
+d) Every ResponseEntity<T> must have HttpStatus given back to client, even body is optional.
+
+ Ex:
+   new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR)
+
+
+e) If We are using Generics Concept in returnType and Type is decided based on execution flow at runtime, then use Symbol - ? 
+     for Generic (Do not Use Object, casting not supported In case of Generics).
+
+   ** In simple Data type is decided at runtime.
+
+f) If HttpStatus is 200(OK) then we can use static method  ok(body) 
+   defined in ResponseEntity class.
+Code:
+   new ResponseEntity<Product>(p,HttpStatus.OK);
+
+Equals to: 
+   ResponseEntity.ok(p);
+
+-------------------------------------------------------------------------------
+Q) What is the difference b/w StringBuffer(JDK 1.0) and StringBuilder (JDK 5)?
+A)  StringBuffer- Multithread Environment Apps (web apps/webservices)..etc
+    StringBuilder - simple/stand alone mode apps.
+
+
+Task: Module -- Student(sid,sname,sfee)
+Code in Order:
+a) model class
+b) Repository interface
+c) Custom Exception
+d) Service Interface and Impl
+e) RestController with Util
+f) Exception Handler
+h) add try-catch blocks
+...
+
+====================Modified try-catch block code-----------------------
+package in.nareshit.raghu.rest;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import in.nareshit.raghu.exception.ProductNotFoundException;
+import in.nareshit.raghu.model.Product;
+import in.nareshit.raghu.service.IProductService;
+
+@RestController
+@RequestMapping("/products")
+public class ProductRestController {
+	
+	@Autowired
+	private IProductService service;
+	
+	@PostMapping
+	public ResponseEntity<String> saveProduct(
+			@RequestBody Product product)
+	{
+		
+		Integer id =  service.saveProduct(product);
+		
+		return new ResponseEntity<String>("Product saved "+id,HttpStatus.OK);
+	}
+	
+	@GetMapping
+	public ResponseEntity<List<Product>> getAllProducts() {
+		
+		List<Product> list =  service.getAllProducts();
+		
+		return new ResponseEntity<List<Product>>(list,HttpStatus.OK);
+	}
+	
+	
+	
+	
+	@GetMapping("/{id}")
+	public ResponseEntity<?> getOneProduct(
+			@PathVariable Integer id
+			)
+	{
+		ResponseEntity<?> resp = null;  // ? it decides that datatype decided at runtime
+		
+		try {
+			Product p = service.getOneProduct(id);
+			resp = new ResponseEntity<Product>(
+					p,HttpStatus.OK);
+			
+		}  catch(ProductNotFoundException pne) {
+			//send to Custom Exception Handler
+			//throw it to handler
+			throw pne;
+		} catch (Exception e) {
+			resp = new ResponseEntity<String>(
+					"Unable to fetch Product",
+					HttpStatus.INTERNAL_SERVER_ERROR);
+			e.printStackTrace();
+		}
+		
+		return resp;
+	}
+	
+	
+	
+	
+	
+	
+	@DeleteMapping("/{id}")
+	public ResponseEntity<String> deleteProduct(
+				@PathVariable Integer id
+			)
+	{
+		ResponseEntity<String> resp = null;
+		try {
+			service.deleteProduct(id);
+			resp =ResponseEntity.ok("Product deleted");
+			
+		} catch (Exception e) {
+			resp = new ResponseEntity<String>(
+					"Unable to Delete Product", 
+					HttpStatus.INTERNAL_SERVER_ERROR);
+			e.printStackTrace();
+		}
+		return resp;
+	}
+	
+	
+	@PutMapping("/{id}")
+	public ResponseEntity<String> updateProduct(
+			@PathVariable Integer id,
+			@RequestBody Product product
+			)
+	{
+		if(service.isProductExist(id)) {
+			product.setProdId(id);
+			service.updateProduct(product);
+			return ResponseEntity.ok("Product Updated!!");
+		} else {
+			// *** throw back to exception handler
+			throw new ProductNotFoundException(
+					"Product '"+id+"' Not exist todo Update!!");
+		}
+		
+	}	
+}
+
+====================================================================================
+	@Override
+	public Student GetStudentById(Integer id) {
+		return repo.findById(id).orElseThrow(()->new StudentNotFoundException(
+				new StringBuffer().append("Student ").append(id)
+				.append(" Does not Exist....").toString()));
+	}
+
+//Code looks complex but it is standard
+
+// is same as
+
+@Override
+	public Student GetStudentById(Integer id) {
+		return repo.findById(id).orElseThrow(()->new StudentNotFoundException(
+				"Student "+id+" Does not Exist...));
+	}
+
+
+
+
+------------------------------------------------------------------
+Spring Boot & React JS CURD@ 11.00am 
+from 10th Dec. By Mr. Raghu
+Link: https://zoom.us/j/93094138447
+Passcode: 112233
+
+---------------------------------------
+Log4J Session#1,#2
+https://www.youtube.com/c/NareshIT/search?query=log4j%20raghu
+
+JUnit #1, #2
+https://www.youtube.com/c/NareshIT/search?query=JUnit%20raghu
+
+Redis Cache #1,#2
+https://www.youtube.com/c/NareshIT/search?query=Redis%20raghu
+
+

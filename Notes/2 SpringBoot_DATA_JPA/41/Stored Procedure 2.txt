@@ -1,0 +1,168 @@
+				Date : 30/10/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+			-------------------------------
+Workspace:
+http://www.mediafire.com/file/qxa9prinv9jq5uf/SpringBoot7AMWorkspace_28102020.zip/file
+
+		Stored Procedures Calls using Hibernate with JPA
+
+*) ToDo coding using Sun Microsystems JPA API, use
+      EntityManagerFactory | EntityManager.
+  DO NOT USE ANY VENDOR implementation directly, like
+  Hibernate: SessionFactory | Session.
+
+
+=> To execute any ORM based operation Use EntityManager.
+   ie insert,update, delete and select..etc.
+
+=> EntityManager even supports calling Stored Procedures by using
+   StoredProcedureQuery.
+
+=> StoredProcedureQuery is used to call on Stored Procedure which is defined at DB.
+
+===========================================================================
+MySQL Database Stored Procedures:
+
+1. No IN and OUT Params. (SELECT query data is final output)
+DELIMITER $$
+CREATE PROCEDURE GETALLEMPS()
+	BEGIN
+		SELECT * FROM EMPLOYEE;
+	END$$
+DELIMITER ;
+
+2. Only IN param, No OUT param.
+DELIMITER $$
+CREATE PROCEDURE GETEMPBYDEPT(IN edept VARCHAR(25))
+ BEGIN
+   SELECT * FROM EMPLOYEE E WHERE  E.EMP_DEPT = edept;
+ END $$
+DELIMITER ;
+
+3. Using both IN and OUT Parameters
+DELIMITER $$
+CREATE PROCEDURE GETEMPBYDESGCOUNT(IN edesg VARCHAR(25), OUT dcount INT)
+ BEGIN
+   SELECT COUNT(*) INTO dcount FROM EMPLOYEE E WHERE  E.emp_desg = edesg;
+ END $$
+DELIMITER ;
+==============================================================================
+			code
+Dependencies: Data Jpa, MySQL, Lombok
+
+1. application.properties
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://localhost:3306/boot7am
+spring.datasource.username=root
+spring.datasource.password=root
+
+spring.jpa.show-sql=true
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+#spring.jpa.hibernate.ddl-auto=create
+spring.jpa.hibernate.ddl-auto=update
+
+2. Model class
+package in.nareshit.raghu.model;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+public class Employee {
+	@Id
+	private Integer empId;
+	private String empName;
+	private String empDesg;
+	private String empDept;
+	private Double empSal;
+}
+
+3. Repository Interface
+package in.nareshit.raghu.repo;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import in.nareshit.raghu.model.Employee;
+
+public interface EmployeeRepository 
+	extends JpaRepository<Employee, Integer> {
+
+	
+}
+
+4. Data Insert Runner class
+
+package in.nareshit.raghu.runner;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+
+import in.nareshit.raghu.model.Employee;
+import in.nareshit.raghu.repo.EmployeeRepository;
+
+@Component
+public class DataInsertRunner implements CommandLineRunner {
+	@Autowired
+	private EmployeeRepository repo;
+	
+	@Override
+	public void run(String... args) throws Exception {
+		repo.save(new Employee(101, "SAM", "Lead", "DEV", 86500.0));
+		repo.save(new Employee(102, "RAM", "MGR", "DEV", 96000.0));
+		repo.save(new Employee(103, "SYED", "ASSOCIATE", "QA", 32500.0));
+		repo.save(new Employee(104, "ABD", "MGR", "BA", 55500.0));
+	}
+
+}
+
+5. Stored Proc Test Runner class
+package in.nareshit.raghu.runner;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.StoredProcedureQuery;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import in.nareshit.raghu.model.Employee;
+
+@Component
+public class JpaBasedRunner implements CommandLineRunner {
+	@Autowired
+	private EntityManager em;
+	
+	@Override
+	public void run(String... args) throws Exception {
+		/*Employee e = em.find(Employee.class, 101); //we can do many db operations
+		System.out.println(e);*/
+		
+		//Step#1 create StoredProcedureQuery object using em
+		//by passing procedureName, resultClasses
+		StoredProcedureQuery query = em.createStoredProcedureQuery("GETALLEMPS", Employee.class);
+		
+		//step#2 provide inputs params and register output params
+		//nothing
+		
+		//step#3 Execute Query
+		List<Employee> emps = query.getResultList();
+		
+		//step#4 print result
+		emps.forEach(System.out::println);
+		
+		
+	}
+}

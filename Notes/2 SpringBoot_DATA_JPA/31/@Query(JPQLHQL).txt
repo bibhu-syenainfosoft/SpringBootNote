@@ -1,0 +1,32 @@
+@Query("JPQL/HQL") is used to write programmer defined query.
+
+SQL: SQL querys are executed at database, these are database dependent.
+SQL#1 executed at DB1 may or may not gets executed at DB#2.
+
+
+JPQL/HQL : [Java Persistency Query Language / Hibernate Query Language]
+=> Object Oriented Query concept.
+=> This is created using ClassName and Variables names (not table and columns)
+=> Dialect generates equal SQL query at runtime.
+=> It supports writing joins to fetch data from multiple tables.
+=> @Query default supports SELECT operation.We can even write non-select queries using Update/Delete.
+=> Supports Query params along with positional params.
+=> Supports projections concept.
+
+
+Ex:
+SQL: (case insensitive)
+  SELECT EID FROM EMPTAB WHERE ESAL > ?
+JPQL/HQL: (Partially case - sensitive)
+  SELECT empId FROM com.app.raghu.Employee WHERE empSal > ?
+
+=> Java words like variable name, class name are case-sensitive.
+=> SQL words SELECT, FROM, WHERE are case-insensitive.
+
+=========================(INTERNAL FLOW)======================================
+=> We define abstract method
+=> Spring Boot Data JPA generates Hibernate code             //Imp for experienced candidate
+=> Hibernate internally calls Dialect
+=> Dialect has pre-defined(hardcoded) SQL format
+=> Finally SQL query is generated and executed at DB.
+==============================================================================

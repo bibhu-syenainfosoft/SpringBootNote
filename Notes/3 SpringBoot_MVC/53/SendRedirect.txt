@@ -1,0 +1,79 @@
+				Date : 13/11/2020
+				Spring Boot 7AM
+				  Mr. RAGHU
+				---------------
+https://www.youtube.com/c/NareshIT/search?query=Security%20raghu
+
+redirect: Moving from one controller#method to another controller#method
+  when request made to first controller#method.
+
+=> It means client made request to controller#method(1st method)
+   this method has processed request and insted of returning view name
+   it is redirecting request to another controller#method(2nd method).
+   Now 2nd method is processing request and giving viewName back to FC.
+
+=> We can compare this concept with : response.sendRedirect(PATH)
+   in Servlets.
+
+---Example Controller code--------------
+*) Controller:-
+package in.nareshit.raghu.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class ProductController {
+
+	@GetMapping("/export")
+	public String exportData() {
+		System.out.println("FROM EXPORT DATA");
+		return "redirect:show";
+	}
+	
+	@GetMapping("/show")
+	public String findMsg() {
+		System.out.println("FROM FIND MSG METHOD");
+		return "Data";
+	}
+	
+}
+*) UI: Data.jsp
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h3>WELCOME TO MSG PAGE</h3>
+</body>
+</html>
+
+http://localhost:8080/export
+---------------------------------------------------------------------
+Refresh: It is also a type of redirect to either same path or different path(URL).
+ It works based on time (sec)
+
+*) We should add this property to Response Header Section.
+--Data.jsp--
+<html>
+<body>
+<h3>WELCOME TO MSG PAGE</h3>
+<%=new java.util.Date() %>
+<%
+response.addHeader("Refresh","5;https://www.google.com/");
+%>
+</body>
+</html>
+
+-------------------------------------------------------
+*) Context Path : Project Name is used as Context in normal web applications.
+ In Spring Boot web applications , context path is set to ''(nothing).
+ We can provide context path using below key:
+      server.servlet.context-path=/redirectapp
+
+Now URL is:
+http://localhost:8080/redirectapp/export
