@@ -35,7 +35,7 @@ https://kafka.apache.org/quickstart
    and @KafkaListener(K) is used to read data at consumer app.
 
 
-*) Topics is a memory that holds data in packets formats [dat blocks].
+*) Topics is a memory that holds data in packets formats [data blocks].
    Those are identified using index numbers starts from zero [offset]
 
 *) MR : Messsage Replica creates cloned copies of actual data to send
