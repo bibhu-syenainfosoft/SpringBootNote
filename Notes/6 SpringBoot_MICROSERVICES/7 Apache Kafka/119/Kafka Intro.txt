@@ -58,7 +58,7 @@ Commands:
 
 *) Starts on Port : 2181
 
-==============================================================
+================================================================
 2. Start Kafka Server
 [Windows]
 .\bin\windows\kafka-server-start.bat .\config\server.properties
@@ -71,15 +71,16 @@ Commands:
 3. Create one topic
 
 .\bin\windows\kafka-topics.bat --create --topic myabc --bootstrap-server localhost:9092
-
+.\bin\windows\kafka-topics.bat --create --zookeeper localhost:2121 --replication-factor 1 --partitions 1 --topic topicName
+================================================================
 4. Start Producer Console
 
 .\bin\windows\kafka-console-producer.bat --topic myabc --bootstrap-server localhost:9092
-
+================================================================
 5. Start Consumer Console
 
 .\bin\windows\kafka-console-consumer.bat --topic myabc --bootstrap-server localhost:9092
 .\bin\windows\kafka-console-consumer.bat --topic myabc --from-beginning --bootstrap-server localhost:9092
-
+================================================================
 *) Press ctrl+C to stop (execute in below order)
  Consumer > Producer > Kafka server > ZooKeeper
