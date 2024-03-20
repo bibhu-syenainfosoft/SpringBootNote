@@ -25,7 +25,7 @@ public class ProductRest {
 		return "SENT:"+message;
 	}
 
-	@GetMapping("/all")
+	@RequestMapping("/all")
 	public String all() {
 		return mStorage.getAll();
 	}

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class ProductService {
 	
 	@Value("${my.app.topicname}")
-	public String topic;
+	private String topic;
 	 
 	@Autowired
 	private KafkaTemplate<String, String> template;
