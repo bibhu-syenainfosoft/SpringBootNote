@@ -1,8 +1,6 @@
 server:
   port: 9898
 spring:
-  application:
-    name: KafkaFirstEx
   kafka:
     producer:
       bootstrap-servers: localhost:9092
@@ -16,6 +14,16 @@ spring:
 my:
  app:
    topicname: topic1
+   
+   
+   
+   
+   
+   # http://localhost:9898/kafka/send?msg=HELLO,abc
+         # Sent:HELLO,abc
+   
+   # http://localhost:9898/kafka/all 
+         #  [HELLO, HELLO,abc]
         
         
         
