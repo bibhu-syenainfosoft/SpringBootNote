@@ -1,0 +1,11 @@
+                               **MICROSERVICES QUESTIONS**
+                                 =======================
+
+1.    MICROSERVICES INTRO
+      -------------------
+i.    What is Monolythic, SOA & Microservices.
+ii.   What is Current Load & Max Load.
+iii.  What is the default Max load and What is the key to modify the default max load.
+iv.   What is Instance/Service instance, Scaling and What are the types of Scaling.
+
+v. 
