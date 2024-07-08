@@ -3,9 +3,19 @@
 
 1.    MICROSERVICES INTRO
       -------------------
-i.    What is Monolythic, SOA & Microservices.
+i.    What is Monolithic, SOA & Microservices.
 ii.   What is Current Load & Max Load.
 iii.  What is the default Max load and What is the key to modify the default max load.
 iv.   What is Instance/Service instance, Scaling and What are the types of Scaling.
 
-v. 
+v.    What are the Pros and Cons of Monolithic Application.
+vi.   Define SOA Architecture and what are the components and operations are required for SOA Architecture.
+
+vii.  Define Microservices.
+viii. What are the differences between Microservices and Monolithic.
+ix.   What is cloud computing & what are the cloud computing service providers.
+
+x.    When an application is called as Microservices i.e Nature of Microservices.
+
+xi.   Define Microservices Architecture, its flow and define all the components one by one.
+xii.  What are some few limitations of Microservices.  
