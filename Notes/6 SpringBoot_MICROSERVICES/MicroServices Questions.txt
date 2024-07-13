@@ -33,6 +33,22 @@ vi.   What is the difference between SpringBoot and Spring Cloud.
 vii.  What are the keys required inside Eureka Server and what is the meaning of register-with-eureka and        
       fetch-registry.
 
-vii.  
+vii.  What are the steps to create one MS App that is connecting to Eureka Server.
+viii. What is the key name for connecting our SpringBoot application to Eureka Server.
+ix.   What are the steps to run Applications that are connected to Eureka in order.
+x.    What are the steps to do to connect our MS app with Eureka.
+xi.   What is the difference between Tomcat Server and Eureka Server.
+xii.  Is communication or access is done using IP address and What happens if IP gets modified.
+xiii. What if Eureka server goes down.
+xiv.  Can't we deploy Eureka and MS in tomcat.
+xv.   For our MS we added dependency eureka discovery client, is not parent?
+xvi.  What are the cases we should go for eureka server.
+xvii. Is there any limits that total how many microservices we can connect to Eureka server.
+xviii.Do we need to follow the execution order in MS.
+xix.  Which port is recommended for Eureka server, is there any standard for defining port no.
+
+ 
+
+
 
 
