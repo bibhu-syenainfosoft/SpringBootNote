@@ -33,4 +33,6 @@ vi.   What is the difference between SpringBoot and Spring Cloud.
 vii.  What are the keys required inside Eureka Server and what is the meaning of register-with-eureka and        
       fetch-registry.
 
+vii.  
+
 
