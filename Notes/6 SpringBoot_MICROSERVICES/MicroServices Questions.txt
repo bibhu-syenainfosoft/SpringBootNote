@@ -24,4 +24,4 @@ xii.  What are some few limitations of Microservices.
 
 1.    EUREKA SERVER
       -------------  
-i.    
+i.    What is Eureka Server.
