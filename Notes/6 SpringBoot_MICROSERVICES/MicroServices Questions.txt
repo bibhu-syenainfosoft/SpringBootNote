@@ -24,4 +24,13 @@ xii.  What are some few limitations of Microservices.
 
 1.    EUREKA SERVER
       -------------  
-i.    What is Eureka Server.
+i.    What is Eureka Server and who provides this and What it contains/holds.
+ii.   What is ServiceInstance and what it contains.
+iii.  What are the keys required in properties file for serviceId and instanceId.
+iv.   Do we need every microservices to register in Eureka Server.
+v.    How can we generate one random number in SpringBoot.
+vi.   What is the difference between SpringBoot and Spring Cloud.
+vii.  What are the keys required inside Eureka Server and what is the meaning of register-with-eureka and        
+      fetch-registry.
+
+
