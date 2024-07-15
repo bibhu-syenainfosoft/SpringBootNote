@@ -49,7 +49,24 @@ xix.  Which port is recommended for Eureka server, is there any standard for def
 
 3.    MS IntraCommunication
       ---------------------
-i.    
+i.    What is Intracomm and what is it called in monolithic application.
+ii.   Intracomm is used for which purpose and total how many ways we are performing Intracomm in SpringBoot.
+iii.  What is the use of DiscoveryClient and Describe the flow of DiscoveryClient.
+iv.   Total how many ServiceInstance will be created per application.
+
+v.    What is the order for defining producer and consumer app.
+
+vi.   What are the limitations of DiscoveryClient.
+vii.  What LoadBalancerClient does.
+viii. Which method is used for LoadBalancerClient that takes serviceId of producer app.
+ix.   Who provides Implementation for LoadBalancerClient.
+x.    What is client side load balance and server side load balance.
+xi.   If there is only one instance inside Eureka server then what is taken as InstanceId and if there is multiple instance then what will happen.
+xii.  What is the key required for getting InstanceId.
+
+
+
+
 
  
 
